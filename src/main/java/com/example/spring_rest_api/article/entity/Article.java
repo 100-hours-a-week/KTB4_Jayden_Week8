@@ -67,4 +67,13 @@ public class Article {
         this.deletedAt = LocalDateTime.now();
         return this;
     }
+
+    public Article increaseReportCount() {
+        this.reportCount = this.reportCount + 1;
+        return this;
+    }
+
+    public void hideArticle() {
+        this.isArticleHidden = true;
+    }
 }

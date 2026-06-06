@@ -13,13 +13,9 @@ public class ArticleResponse {
     private Long articleId;
     private String title;
     private String content;
-    private String previousContent;
     private Long userId;
     private List<String> contentImages;
-    private List<String> previousContentImages;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
     private boolean isArticleDeleted;
     private boolean isArticleEdited;
     private boolean isArticleHidden;
@@ -33,13 +29,9 @@ public class ArticleResponse {
         response.articleId = article.getArticleId();
         response.title = article.getTitle();
         response.content = article.getContent();
-        response.previousContent = article.getPreviousContent();
         response.userId = article.getUserId();
         response.contentImages = article.getContentImages();
-        response.previousContentImages = article.getPreviousContentImages();
         response.createdAt = article.getCreatedAt();
-        response.updatedAt = article.getUpdatedAt();
-        response.deletedAt = article.getDeletedAt();
         response.isArticleDeleted = article.isArticleDeleted();
         response.isArticleEdited = article.isArticleEdited();
         response.isArticleHidden = article.isArticleHidden();

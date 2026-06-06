@@ -1,12 +1,14 @@
 package com.example.spring_rest_api.article.repository;
 
 import com.example.spring_rest_api.article.entity.Article;
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @Repository
@@ -28,7 +30,8 @@ public class ArticleMemoryRepository {
     }
 
     public Article findById(Long articleId) {
-        return articleStorage.get(articleId);
+        return Optional.ofNullable(articleStorage.get(articleId))
+                .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
     }
 
     public List<Article> findAllInfiniteScroll(Long pageSize, Long lastArticleId) {
@@ -44,5 +47,12 @@ public class ArticleMemoryRepository {
                 .toList();
     }
 
-
+    public Article report(Long articleId) {
+        Article findArticle = findById(articleId);
+        Article replaced = articleStorage.replace(articleId, findArticle.increaseReportCount());
+        if (replaced.getReportCount() >= 5) {
+            replaced.hideArticle();
+        }
+        return replaced;
+    }
 }

@@ -4,8 +4,11 @@ import com.example.spring_rest_api.article.service.ArticleService;
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
+import com.example.spring_rest_api.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,45 +19,66 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @PostMapping("/articles")
-    public ArticleResponse create(@Valid @RequestBody ArticleCreateRequest request) {
-        return articleService.create(request);
+    public ResponseEntity<ApiResponse<ArticleResponse>> create(@Valid @RequestBody ArticleCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(
+                        "article_create_success",
+                        articleService.create(request)
+                ));
     }
 
     @PutMapping("/articles/{articleId}")
-    public ArticleResponse update(@PathVariable Long articleId, @Valid @RequestBody ArticleUpdateRequest request) {
-        return articleService.update(articleId, request);
+    public ResponseEntity<ApiResponse<ArticleResponse>> update(@PathVariable Long articleId, @Valid @RequestBody ArticleUpdateRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "article_update_success",
+                articleService.update(articleId, request)
+        ));
     }
 
     @PutMapping("/articles/temp-save/{userId}")
-    public ArticleResponse saveTempArticle(@PathVariable Long userId, @Valid @RequestBody ArticleUpdateRequest request) {
-        return articleService.saveTempArticle(userId, request);
+    public ResponseEntity<?> saveTempArticle(@PathVariable Long userId, @Valid @RequestBody ArticleUpdateRequest request) {
+        articleService.saveTempArticle(userId, request);
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/articles/temp-save/{userId}")
-    public ArticleResponse readTempArticle(@PathVariable Long userId) {
-        return articleService.readTempArticle(userId);
+    public ResponseEntity<ApiResponse<ArticleResponse>> readTempArticle(@PathVariable Long userId) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "temp_save_load_success",
+                articleService.readTempArticle(userId)
+        ));
     }
 
     @DeleteMapping("/articles/{articleId}")
-    public ArticleResponse delete(@PathVariable Long articleId) {
-        return articleService.delete(articleId);
+    public ResponseEntity<ApiResponse<ArticleResponse>> delete(@PathVariable Long articleId) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "article_delete_success",
+                articleService.delete(articleId)
+        ));
     }
 
     @GetMapping("/articles/{articleId}")
-    public ArticleResponse read(@PathVariable Long articleId) {
-        return articleService.read(articleId);
+    public ResponseEntity<ApiResponse<ArticleResponse>> read(@PathVariable Long articleId) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "article_load_success",
+                articleService.read(articleId)
+        ));
     }
 
     @GetMapping("/articles")
-    public List<ArticleResponse> readInfiniteScroll(
+    public ResponseEntity<ApiResponse<List<ArticleResponse>>> readInfiniteScroll(
             @RequestParam("pageSize") Long pageSize,
             @RequestParam(value = "lastArticleId", required = false) Long lastArticleId
     ) {
-        return articleService.readInfiniteScroll(pageSize, lastArticleId);
+        return ResponseEntity.ok(ApiResponse.of(
+                "articles_load_success",
+                articleService.readInfiniteScroll(pageSize, lastArticleId)
+        ));
     }
 
-    @PostMapping("/articles/{articleId}/users/{userId}/report")
-    public void report(@PathVariable Long articleId, @PathVariable Long userId) {
-        articleService.report(articleId, userId);
+    @PostMapping("/articles/{articleId}/users/{reportingUserId}/report")
+    public ResponseEntity<?> report(@PathVariable Long articleId, @PathVariable Long reportingUserId) {
+        articleService.report(articleId, reportingUserId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -24,7 +24,7 @@ public class ArticleLikeService {
             ));
             articleLikeCountMemoryRepository.increase(articleId);
         } else {
-            throw new BadRequestException("like_bad_request");
+            throw new BadRequestException("LIKE_BAD_REQUEST");
         }
 
         return ArticleLikeCountResponse.from(
@@ -39,7 +39,7 @@ public class ArticleLikeService {
             articleLikeMemoryRepository.delete(findArticleLike);
             articleLikeCountMemoryRepository.decrease(articleId);
         } else {
-            throw new BadRequestException("unlike_bad_request");
+            throw new BadRequestException("UNLIKE_BAD_REQUEST");
         }
         return ArticleLikeCountResponse.from(
                 articleId,
