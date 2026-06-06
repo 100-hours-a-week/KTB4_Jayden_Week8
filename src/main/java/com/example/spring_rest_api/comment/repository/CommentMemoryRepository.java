@@ -1,11 +1,13 @@
 package com.example.spring_rest_api.comment.repository;
 
 import com.example.spring_rest_api.comment.entity.Comment;
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import static java.util.Comparator.*;
@@ -29,7 +31,8 @@ public class CommentMemoryRepository {
     }
 
     public Comment findById(Long commentId) {
-        return commentStorage.get(commentId);
+        return Optional.ofNullable(commentStorage.get(commentId))
+                .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
     }
 
     public List<Comment> findAllInfiniteScroll(Long articleId, Long pageSize) {

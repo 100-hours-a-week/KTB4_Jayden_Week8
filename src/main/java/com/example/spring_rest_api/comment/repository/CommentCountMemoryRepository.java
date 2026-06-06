@@ -1,9 +1,11 @@
 package com.example.spring_rest_api.comment.repository;
 
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
@@ -13,7 +15,8 @@ public class CommentCountMemoryRepository {
     private final Map<Long, Long> commentCountStorage = new ConcurrentHashMap<>();
 
     public Long read(Long articleId) {
-        return  commentCountStorage.getOrDefault(articleId, 0L);
+        return Optional.ofNullable(commentCountStorage.getOrDefault(articleId, 0L))
+                .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
     }
 
     public void increase(Long articleId) {
