@@ -50,12 +50,11 @@ public class ArticleMemoryRepository {
                 .toList();
     }
 
-    public Article report(Long articleId) {
+    public void report(Long articleId) {
         Article findArticle = findById(articleId);
         Article replaced = articleStorage.replace(articleId, findArticle.increaseReportCount());
         if (replaced.getReportCount() >= 5) {
             replaced.hideArticle();
         }
-        return replaced;
     }
 }
