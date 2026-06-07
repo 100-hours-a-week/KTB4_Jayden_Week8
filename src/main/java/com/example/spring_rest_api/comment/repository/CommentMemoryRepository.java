@@ -41,7 +41,7 @@ public class CommentMemoryRepository {
     public List<Comment> findAllInfiniteScroll(Long articleId, Long pageSize) {
         return commentStorage.values().stream()
                 .filter(comment -> comment.getArticleId().equals(articleId))
-                .sorted(comparing(Comment::getParentCommentId)
+                .sorted(comparing(Comment::getParentCommentId, nullsFirst(naturalOrder()))
                         .thenComparing(Comment::getCommentId))
                 .limit(pageSize)
                 .toList();
@@ -50,7 +50,7 @@ public class CommentMemoryRepository {
     public List<Comment> findAllInfiniteScroll(Long articleId, Long pageSize, Long lastParentCommentId, Long lastCommentId) {
         return commentStorage.values().stream()
                 .filter(comment -> comment.getArticleId().equals(articleId))
-                .sorted(comparing(Comment::getParentCommentId)
+                .sorted(comparing(Comment::getParentCommentId, nullsFirst(naturalOrder()))
                         .thenComparing(Comment::getCommentId))
                 .filter(comment -> (comment.getParentCommentId() > lastParentCommentId) ||
                         (comment.getParentCommentId().equals(lastParentCommentId) && comment.getCommentId() >= lastCommentId))
