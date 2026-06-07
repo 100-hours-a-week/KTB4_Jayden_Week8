@@ -14,13 +14,12 @@ public class ArticleLikeMemoryRepository {
     private final Map<Long, ArticleLike> articleLikeStorage =  new ConcurrentHashMap<>();
 
     public ArticleLike findByArticleIdAndUserId(Long articleId, Long userId) {
-        return articleLikeStorage.entrySet().stream()
+        return articleLikeStorage.values().stream()
                 .filter(entry ->
-                        entry.getValue().getArticleId().equals(articleId) &&
-                                entry.getValue().getUserId().equals(userId)
+                        entry.getArticleId().equals(articleId) &&
+                                entry.getUserId().equals(userId)
                 )
                 .findFirst()
-                .map(Map.Entry::getValue)
                 .orElse(null);
     }
 
