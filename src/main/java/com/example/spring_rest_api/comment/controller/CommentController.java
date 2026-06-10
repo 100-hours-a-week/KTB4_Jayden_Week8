@@ -31,7 +31,7 @@ public class CommentController {
     public ResponseEntity<ApiResponse<CommentResponse>> update(@PathVariable Long articleId, @PathVariable Long commentId, @RequestBody CommentUpdateRequest request) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_update_success",
-롤                commentService.update(articleId, commentId, request)
+                commentService.update(articleId, commentId, request)
         ));
     }
 
