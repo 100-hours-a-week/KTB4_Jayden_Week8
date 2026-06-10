@@ -1,5 +1,6 @@
 package com.example.spring_rest_api.comment.service;
 
+import com.example.spring_rest_api.article.repository.ArticleMemoryRepository;
 import com.example.spring_rest_api.comment.entity.Comment;
 import com.example.spring_rest_api.comment.repository.CommentCountMemoryRepository;
 import com.example.spring_rest_api.comment.repository.CommentMemoryRepository;
@@ -7,6 +8,7 @@ import com.example.spring_rest_api.comment.service.request.CommentCreateRequest;
 import com.example.spring_rest_api.comment.service.request.CommentUpdateRequest;
 import com.example.spring_rest_api.comment.service.response.CommentCountResponse;
 import com.example.spring_rest_api.comment.service.response.CommentResponse;
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.user.repository.UserMemoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,9 +21,13 @@ public class CommentService {
     private final CommentMemoryRepository commentMemoryRepository;
     private final CommentCountMemoryRepository commentCountMemoryRepository;
     private final UserMemoryRepository userMemoryRepository;
+    private final ArticleMemoryRepository articleMemoryRepository;
     private Long sequence = 0L;
 
     public CommentResponse create(Long articleId, CommentCreateRequest request) {
+        throwIfArticleIsAbsent(articleId);
+        throwIfParentCommentIdIsAbsent(request);
+
         commentCountMemoryRepository.increase(articleId);
         return CommentResponse.from(commentMemoryRepository.save(Comment.create(
                 sequence++,
@@ -33,7 +39,9 @@ public class CommentService {
         )));
     }
 
-    public CommentResponse update(Long commentId, CommentUpdateRequest request) {
+    public CommentResponse update(Long articleId, Long commentId, CommentUpdateRequest request) {
+        throwIfArticleIsAbsent(articleId);
+
         Comment updated = commentMemoryRepository.findById(commentId).update(request.getCommentText());
         return CommentResponse.from(
                 commentMemoryRepository.update(updated)
@@ -41,6 +49,8 @@ public class CommentService {
     }
 
     public CommentResponse delete(Long articleId, Long commentId) {
+        throwIfArticleIsAbsent(articleId);
+
         Comment deleted = commentMemoryRepository.findById(commentId).delete();
         commentCountMemoryRepository.decrease(articleId);
         return CommentResponse.from(
@@ -48,7 +58,9 @@ public class CommentService {
         );
     }
 
-    public CommentResponse read(Long commentId) {
+    public CommentResponse read(Long articleId, Long commentId) {
+        throwIfArticleIsAbsent(articleId);
+
         return CommentResponse.from(
                 commentMemoryRepository.findById(commentId)
         );
@@ -69,5 +81,18 @@ public class CommentService {
                 articleId,
                 commentCountMemoryRepository.read(articleId)
         );
+    }
+
+
+    private void throwIfArticleIsAbsent(Long articleId) {
+        if (articleMemoryRepository.findById(articleId) == null) {
+            throw new NotFoundException("ARTICLE_NOT_FOUND");
+        }
+    }
+
+    private void throwIfParentCommentIdIsAbsent(CommentCreateRequest request) {
+        if (commentMemoryRepository.findById(request.getParentCommentId()) == null) {
+            throw new NotFoundException("COMMENT_NOT_FOUND");
+        }
     }
 }

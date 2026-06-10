@@ -31,7 +31,7 @@ public class CommentController {
     public ResponseEntity<ApiResponse<CommentResponse>> update(@PathVariable Long articleId, @PathVariable Long commentId, @RequestBody CommentUpdateRequest request) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_update_success",
-                commentService.update(commentId, request)
+롤                commentService.update(articleId, commentId, request)
         ));
     }
 
@@ -47,7 +47,7 @@ public class CommentController {
     public ResponseEntity<ApiResponse<CommentResponse>> read(@PathVariable Long articleId, @PathVariable Long commentId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_load_success",
-                commentService.read(commentId)
+                commentService.read(articleId, commentId)
         ));
     }
 
