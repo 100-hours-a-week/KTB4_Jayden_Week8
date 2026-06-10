@@ -7,6 +7,7 @@ import com.example.spring_rest_api.article.repository.ArticleTempMemoryRepositor
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
+import com.example.spring_rest_api.common.exception.BadRequestException;
 import com.example.spring_rest_api.common.exception.RequestConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,8 @@ public class ArticleService {
     }
 
     public ArticleResponse read(Long articleId) {
+        throwIfArticleIsAbsent(articleId);
+
         return ArticleResponse.from(
                 articleMemoryRepository.findById(articleId)
         );
@@ -82,6 +85,13 @@ public class ArticleService {
             articleReportMemoryRepository.report(articleId, reportingUserId);
         } else {
             throw new RequestConflictException("ALREADY_REPORTED");
+        }
+    }
+
+    private void throwIfArticleIsAbsent(Long articleId) {
+        Article findArticle = articleMemoryRepository.findById(articleId);
+        if (findArticle.isArticleDeleted() || findArticle.isArticleHidden()) {
+            throw new BadRequestException("ARTICLE_UNAVAILABLE");
         }
     }
 }
