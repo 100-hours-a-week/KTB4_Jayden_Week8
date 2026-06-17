@@ -7,11 +7,14 @@ import com.example.spring_rest_api.article.repository.ArticleTempMemoryRepositor
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
+import com.example.spring_rest_api.comment.repository.CommentCountMemoryRepository;
 import com.example.spring_rest_api.common.exception.BadRequestException;
 import com.example.spring_rest_api.common.exception.ForbiddenException;
 import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.common.exception.RequestConflictException;
+import com.example.spring_rest_api.like.repository.ArticleLikeCountMemoryRepository;
 import com.example.spring_rest_api.user.repository.UserMemoryRepository;
+import com.example.spring_rest_api.view.repository.ArticleViewCountMemoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,9 @@ public class ArticleService {
     private final ArticleTempMemoryRepository articleTempMemoryRepository;
     private final ArticleReportMemoryRepository articleReportMemoryRepository;
     private final UserMemoryRepository userMemoryRepository;
+    private final CommentCountMemoryRepository commentCountMemoryRepository;
+    private final ArticleLikeCountMemoryRepository articleLikeCountMemoryRepository;
+    private final ArticleViewCountMemoryRepository articleViewCountMemoryRepository;
     private Long sequence = 0L;
 
     public ArticleResponse create(ArticleCreateRequest request) {
@@ -97,11 +103,21 @@ public class ArticleService {
 
         return ArticleResponse.from(
                 articleMemoryRepository.findById(articleId)
+                        .updateCount(
+                                articleLikeCountMemoryRepository.read(articleId),
+                                articleViewCountMemoryRepository.read(articleId),
+                                commentCountMemoryRepository.read(articleId)
+                        )
         );
     }
 
     public List<ArticleResponse> readInfiniteScroll(Long pageSize, Long lastArticleId) {
         return articleMemoryRepository.findAllInfiniteScroll(pageSize, lastArticleId).stream()
+                .map(a -> a.updateCount(
+                        articleLikeCountMemoryRepository.read(a.getArticleId()),
+                        articleViewCountMemoryRepository.read(a.getArticleId()),
+                        commentCountMemoryRepository.read(a.getArticleId())
+                ))
                 .map(ArticleResponse::from)
                 .toList();
     }

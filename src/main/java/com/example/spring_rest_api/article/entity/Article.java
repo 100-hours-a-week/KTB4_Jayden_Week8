@@ -62,6 +62,13 @@ public class Article {
         return this;
     }
 
+    public Article updateCount(Long articleLikeCount, Long articleViewCount, Long commentCount) {
+        this.articleLikeCount = articleLikeCount;
+        this.articleViewCount = articleViewCount;
+        this.commentCount = commentCount;
+        return this;
+    }
+
     public Article delete() {
         this.isArticleDeleted = true;
         this.deletedAt = LocalDateTime.now();
