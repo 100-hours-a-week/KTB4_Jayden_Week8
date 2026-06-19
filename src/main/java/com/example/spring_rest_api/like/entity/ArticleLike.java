@@ -1,26 +1,35 @@
 package com.example.spring_rest_api.like.entity;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import com.example.spring_rest_api.article.entity.Article;
+import com.example.spring_rest_api.user.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArticleLike {
-    private Long  articleLikeId;
-    private Long userId;
-    private Long articleId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long articleLikeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "article_id")
+    private Article article;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     private LocalDateTime createdAt;
 
-    public static ArticleLike create(Long articleLikeId, Long articleId, Long userId) {
+    public static ArticleLike create(Article article, User user) {
         ArticleLike articleLike = new ArticleLike();
-        articleLike.articleLikeId = articleLikeId;
-        articleLike.userId = userId;
-        articleLike.articleId = articleId;
+        articleLike.article = article;
+        articleLike.user = user;
         articleLike.createdAt = LocalDateTime.now();
         return articleLike;
     }

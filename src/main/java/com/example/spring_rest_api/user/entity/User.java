@@ -1,40 +1,43 @@
 package com.example.spring_rest_api.user.entity;
 
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 
+@Entity(name = "users")
 @Getter
-@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long userId;
     private String email;
     private String password;
     private String nickname;
     private String profileImage;
-    private boolean isUserDeleted;
     private LocalDateTime createdAt;
+    private LocalDateTime deletedAt;
     private LocalDateTime informationUpdatedAt;
     private LocalDateTime passwordUpdatedAt;
-    private LocalDateTime deletedAt;
 
-    public static User create(Long userId, String email, String password, String nickname, String profileImage) {
+    public static User create(String email, String password, String nickname, String profileImage) {
         User user = new User();
-        user.userId = userId;
         user.email = email;
         user.password = password;
         user.nickname = nickname;
         user.profileImage = profileImage;
-        user.isUserDeleted = false;
         user.createdAt = LocalDateTime.now();
+        user.deletedAt = null;
         user.informationUpdatedAt = user.createdAt;
         user.passwordUpdatedAt = user.createdAt;
-        user.deletedAt = null;
         return user;
     }
 
@@ -52,7 +55,6 @@ public class User {
     }
 
     public User delete() {
-        this.isUserDeleted = true;
         this.deletedAt = LocalDateTime.now();
         return this;
     }

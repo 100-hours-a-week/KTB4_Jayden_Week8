@@ -1,39 +1,44 @@
 package com.example.spring_rest_api.comment.entity;
 
+import com.example.spring_rest_api.article.entity.Article;
+import com.example.spring_rest_api.user.entity.User;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Entity(name = "comments")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long commentId;
-    private Long articleId;
-    private Long userId;
-    private String profileImage;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "article_id")
+    private Article article;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+    private Long parentCommentId;
     private String commentText;
-    private boolean isUserDeleted;
-    private boolean isCommentDeleted;
-    private boolean isCommentUpdated;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Long parentCommentId;
+    private LocalDateTime deletedAt;
 
-    public static Comment create(Long commentId, Long articleId, Long userId, String profileImage, String commentText, Long parentCommentId) {
+    public static Comment create(Article article, User user, Long parentCommentId, String commentText) {
         Comment comment = new  Comment();
-        comment.commentId = commentId;
-        comment.articleId = articleId;
-        comment.userId = userId;
-        comment.profileImage = profileImage;
-        comment.commentText = commentText;
-        comment.isUserDeleted = false;
-        comment.isCommentDeleted = false;
-        comment.isCommentUpdated = false;
-        comment.createdAt = LocalDateTime.now();
-        comment.updatedAt = comment.createdAt;
+        comment.article = article;
+        comment.user = user;
         comment.parentCommentId = parentCommentId;
+        comment.commentText = commentText;
+        comment.createdAt = LocalDateTime.now();
+        comment.updatedAt = null;
+        comment.deletedAt = null;
         return comment;
     }
 
@@ -44,7 +49,6 @@ public class Comment {
     }
 
     public Comment delete() {
-        this.isCommentDeleted = true;
         this.updatedAt = LocalDateTime.now();
         return this;
     }

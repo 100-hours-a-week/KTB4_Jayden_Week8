@@ -4,6 +4,8 @@ import com.example.spring_rest_api.user.entity.User;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 @Getter
 @ToString
 public class UserResponse {
@@ -11,7 +13,7 @@ public class UserResponse {
     private String password;
     private String nickname;
     private String profileImage;
-    private boolean isUserDeleted;
+    private LocalDateTime deletedAt;
 
 
     public static UserResponse from(User user) {
@@ -20,7 +22,7 @@ public class UserResponse {
         userResponse.password = user.getPassword();
         userResponse.nickname = user.getNickname();
         userResponse.profileImage = user.getProfileImage();
-        userResponse.isUserDeleted = user.isUserDeleted();
+        userResponse.deletedAt = user.getDeletedAt();
         return userResponse;
     }
 }

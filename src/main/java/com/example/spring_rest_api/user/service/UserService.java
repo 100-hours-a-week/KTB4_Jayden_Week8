@@ -1,22 +1,24 @@
 package com.example.spring_rest_api.user.service;
 
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.user.entity.User;
-import com.example.spring_rest_api.user.repository.UserMemoryRepository;
+import com.example.spring_rest_api.user.repository.UserRepository;
 import com.example.spring_rest_api.user.service.request.UserCreateRequest;
 import com.example.spring_rest_api.user.service.request.UserUpdateRequest;
 import com.example.spring_rest_api.user.service.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
-    private final UserMemoryRepository userMemoryRepository;
-    private Long sequence = 0L;
+    private final UserRepository userRepository;
 
+    @Transactional
     public UserResponse create(UserCreateRequest request) {
-        return UserResponse.from(userMemoryRepository.create(User.create(
-                sequence++,
+        return UserResponse.from(userRepository.save(User.create(
                 request.getEmail(),
                 request.getPassword(),
                 request.getNickname(),
@@ -25,29 +27,35 @@ public class UserService {
     }
 
     public UserResponse read(Long userId) {
-        return UserResponse.from(userMemoryRepository.findById(userId));
+        return UserResponse.from(
+                userRepository.findById(userId)
+                        .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))
+        );
     }
 
+    @Transactional
     public UserResponse updateInformation(Long userId, UserUpdateRequest request) {
-        return UserResponse.from(userMemoryRepository.update(
+        return UserResponse.from(userRepository.update(
                 userId,
-                userMemoryRepository.findById(userId).updateInformation(
+                userRepository.findById(userId).updateInformation(
                         request.getNickname(),
                         request.getProfileImage()
                 )
         ));
     }
 
+    @Transactional
     public UserResponse updatePassword(Long userId, UserUpdateRequest request) {
-        return UserResponse.from(userMemoryRepository.update(
+        return UserResponse.from(userRepository.update(
                 userId,
-                userMemoryRepository.findById(userId).updatePassword(
+                userRepository.findById(userId).updatePassword(
                         request.getPassword()
                 )
         ));
     }
 
+    @Transactional
     public UserResponse delete(Long userId) {
-        return UserResponse.from(userMemoryRepository.delete(userId));
+        return UserResponse.from(userRepository.delete(userId));
     }
 }
