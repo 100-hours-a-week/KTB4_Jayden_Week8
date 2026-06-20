@@ -11,6 +11,6 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArticleStatId implements Serializable {
-    private Long articleId;
-    private Long articleStatId;
+    private Long articleId; // parent
+    private Long articleStatId; // child
 }

@@ -25,13 +25,13 @@ public class ArticleStat {
     private Long articleViewCount;
     private Long articleReportCount;
 
-    public ArticleStat create(Article article, Long commentCount, Long articleLikeCount, Long articleViewCount, Long articleReportCount) {
+    public static ArticleStat create(Article article) {
         ArticleStat articleStat = new ArticleStat();
         articleStat.article = article;
-        articleStat.commentCount = commentCount;
-        articleStat.articleLikeCount = articleLikeCount;
-        articleStat.articleViewCount = articleViewCount;
-        articleStat.articleReportCount = articleReportCount;
+        articleStat.commentCount = 0L;
+        articleStat.articleLikeCount = 0L;
+        articleStat.articleViewCount = 0L;
+        articleStat.articleReportCount = 0L;
         return articleStat;
     }
 
@@ -41,6 +41,10 @@ public class ArticleStat {
 
     public void incrementArticleLikeCount() {
         this.articleLikeCount++;
+    }
+
+    public void decrementArticleLikeCount() {
+        this.articleLikeCount--;
     }
 
     public void incrementArticleViewCount() {

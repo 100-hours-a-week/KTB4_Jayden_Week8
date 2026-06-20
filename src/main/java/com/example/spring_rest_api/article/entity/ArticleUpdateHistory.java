@@ -27,7 +27,7 @@ public class ArticleUpdateHistory {
     private List<String> contentImages;
     private LocalDateTime updatedAt;
 
-    public ArticleUpdateHistory create(Article article, String title, String content, List<String> contentImages) {
+    public static ArticleUpdateHistory create(Article article, String title, String content, List<String> contentImages) {
         ArticleUpdateHistory history = new ArticleUpdateHistory();
         history.article = article;
         history.title = title;

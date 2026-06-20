@@ -1,56 +1,71 @@
 package com.example.spring_rest_api.like.service;
 
+import com.example.spring_rest_api.article.entity.ArticleStat;
+import com.example.spring_rest_api.article.repository.ArticleRepository;
+import com.example.spring_rest_api.article.repository.ArticleStatRepository;
 import com.example.spring_rest_api.common.exception.BadRequestException;
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.like.entity.ArticleLike;
-import com.example.spring_rest_api.like.repository.ArticleLikeCountMemoryRepository;
-import com.example.spring_rest_api.like.repository.ArticleLikeMemoryRepository;
+import com.example.spring_rest_api.like.repository.ArticleLikeRepository;
 import com.example.spring_rest_api.like.service.response.ArticleLikeCountResponse;
+import com.example.spring_rest_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ArticleLikeService {
-    private final ArticleLikeMemoryRepository articleLikeMemoryRepository;
-    private final ArticleLikeCountMemoryRepository articleLikeCountMemoryRepository;
-    private Long sequence = 0L;
+    private final ArticleLikeRepository articleLikeRepository;
+    private final ArticleStatRepository articleStatRepository;
+    private final UserRepository userRepository;
+    private final ArticleRepository articleRepository;
 
+    @Transactional
     public ArticleLikeCountResponse like(Long articleId, Long userId) {
-        if (articleLikeMemoryRepository.findByArticleIdAndUserId(articleId, userId) == null) {
-            articleLikeMemoryRepository.save(ArticleLike.create(
-                    sequence++,
-                    articleId,
-                    userId
-            ));
-            articleLikeCountMemoryRepository.increase(articleId);
-        } else {
-            throw new BadRequestException("LIKE_BAD_REQUEST");
+        if (articleLikeRepository.findByArticleIdAndUserId(articleId, userId).isPresent()) {
+            throw new BadRequestException("ALREADY_LIKED");
         }
+
+        ArticleLike.create(
+                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))
+        );
+
+        ArticleStat stat = articleStatRepository.findById(articleId)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        stat.incrementArticleLikeCount();
 
         return ArticleLikeCountResponse.from(
                 articleId,
-                articleLikeCountMemoryRepository.read(articleId)
+                stat.getArticleLikeCount()
         );
     }
 
+    @Transactional
     public ArticleLikeCountResponse unlike(Long articleId, Long userId) {
-        ArticleLike findArticleLike = articleLikeMemoryRepository.findByArticleIdAndUserId(articleId, userId);
-        if (findArticleLike != null) {
-            articleLikeMemoryRepository.delete(findArticleLike);
-            articleLikeCountMemoryRepository.decrease(articleId);
-        } else {
-            throw new BadRequestException("UNLIKE_BAD_REQUEST");
-        }
+        ArticleLike like = articleLikeRepository
+                .findByArticleIdAndUserId(articleId, userId)
+                .orElseThrow(() -> new NotFoundException("LIKE_NOT_FOUND"));
+        articleLikeRepository.delete(like);
+
+        ArticleStat stat = articleStatRepository.findById(articleId)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        stat.decrementArticleLikeCount();
+
         return ArticleLikeCountResponse.from(
                 articleId,
-                articleLikeCountMemoryRepository.read(articleId)
+                stat.getArticleLikeCount()
         );
     }
 
     public ArticleLikeCountResponse readCount(Long articleId) {
+        ArticleStat stat = articleStatRepository.findById(articleId)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
         return ArticleLikeCountResponse.from(
                 articleId,
-                articleLikeCountMemoryRepository.read(articleId)
+                stat.getArticleLikeCount()
         );
     }
 }

@@ -35,27 +35,28 @@ public class UserService {
 
     @Transactional
     public UserResponse updateInformation(Long userId, UserUpdateRequest request) {
-        return UserResponse.from(userRepository.update(
-                userId,
-                userRepository.findById(userId).updateInformation(
-                        request.getNickname(),
-                        request.getProfileImage()
-                )
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+        return UserResponse.from(user.updateInformation(
+                request.getNickname(),
+                request.getProfileImage()
         ));
     }
 
     @Transactional
     public UserResponse updatePassword(Long userId, UserUpdateRequest request) {
-        return UserResponse.from(userRepository.update(
-                userId,
-                userRepository.findById(userId).updatePassword(
-                        request.getPassword()
-                )
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+        return UserResponse.from(user.updatePassword(
+                request.getPassword()
         ));
     }
 
     @Transactional
     public UserResponse delete(Long userId) {
-        return UserResponse.from(userRepository.delete(userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+        userRepository.delete(user);
+        return UserResponse.from(user);
     }
 }

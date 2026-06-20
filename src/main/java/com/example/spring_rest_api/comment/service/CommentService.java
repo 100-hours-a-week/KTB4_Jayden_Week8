@@ -1,6 +1,5 @@
 package com.example.spring_rest_api.comment.service;
 
-import com.example.spring_rest_api.article.repository.ArticleMemoryRepository;
 import com.example.spring_rest_api.comment.entity.Comment;
 import com.example.spring_rest_api.comment.repository.CommentCountMemoryRepository;
 import com.example.spring_rest_api.comment.repository.CommentMemoryRepository;

@@ -3,6 +3,7 @@ package com.example.spring_rest_api.article.controller;
 import com.example.spring_rest_api.article.service.ArticleService;
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
+import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
 import com.example.spring_rest_api.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -35,20 +36,6 @@ public class ArticleController {
         ));
     }
 
-    @PutMapping("/articles/temp-save/{userId}")
-    public ResponseEntity<?> saveTempArticle(@PathVariable Long userId, @Valid @RequestBody ArticleUpdateRequest request) {
-        articleService.saveTempArticle(userId, request);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/articles/temp-save/{userId}")
-    public ResponseEntity<ApiResponse<ArticleResponse>> readTempArticle(@PathVariable Long userId) {
-        return ResponseEntity.ok(ApiResponse.of(
-                "temp_save_load_success",
-                articleService.readTempArticle(userId)
-        ));
-    }
-
     @DeleteMapping("/articles/{articleId}")
     public ResponseEntity<ApiResponse<ArticleResponse>> delete(@PathVariable Long articleId) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -58,7 +45,7 @@ public class ArticleController {
     }
 
     @GetMapping("/articles/{articleId}")
-    public ResponseEntity<ApiResponse<ArticleResponse>> read(@PathVariable Long articleId) {
+    public ResponseEntity<ApiResponse<ArticleReadResponse>> read(@PathVariable Long articleId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "article_load_success",
                 articleService.read(articleId)
@@ -66,7 +53,7 @@ public class ArticleController {
     }
 
     @GetMapping("/articles")
-    public ResponseEntity<ApiResponse<List<ArticleResponse>>> readInfiniteScroll(
+    public ResponseEntity<ApiResponse<List<ArticleReadResponse>>> readInfiniteScroll(
             @RequestParam("pageSize") Long pageSize,
             @RequestParam(value = "lastArticleId", required = false) Long lastArticleId
     ) {
@@ -74,11 +61,5 @@ public class ArticleController {
                 "articles_load_success",
                 articleService.readInfiniteScroll(pageSize, lastArticleId)
         ));
-    }
-
-    @PostMapping("/articles/{articleId}/users/{reportingUserId}/report")
-    public ResponseEntity<?> report(@PathVariable Long articleId, @PathVariable Long reportingUserId) {
-        articleService.report(articleId, reportingUserId);
-        return ResponseEntity.noContent().build();
     }
 }

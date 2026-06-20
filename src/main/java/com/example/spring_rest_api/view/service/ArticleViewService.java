@@ -1,49 +1,77 @@
 package com.example.spring_rest_api.view.service;
 
+import com.example.spring_rest_api.article.entity.ArticleStat;
+import com.example.spring_rest_api.article.repository.ArticleRepository;
+import com.example.spring_rest_api.article.repository.ArticleStatRepository;
+import com.example.spring_rest_api.common.exception.NotFoundException;
+import com.example.spring_rest_api.user.repository.UserRepository;
 import com.example.spring_rest_api.view.entity.ArticleView;
-import com.example.spring_rest_api.view.repository.ArticleViewCountMemoryRepository;
-import com.example.spring_rest_api.view.repository.ArticleViewMemoryRepository;
+import com.example.spring_rest_api.view.repository.ArticleViewRepository;
 import com.example.spring_rest_api.view.service.response.ArticleViewCountResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ArticleViewService {
-    private final ArticleViewMemoryRepository articleViewMemoryRepository;
-    private final ArticleViewCountMemoryRepository articleViewCountMemoryRepository;
-    private Long sequence = 0L;
+    private final ArticleViewRepository articleViewRepository;
+    private final ArticleStatRepository articleStatRepository;
+    private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
 
+    @Transactional
     public ArticleViewCountResponse increaseCount(Long articleId, Long userId) {
-        ArticleView findArticleView = articleViewMemoryRepository.findByArticleIdAndUserId(articleId, userId);
-        if (findArticleView == null) {
-            articleViewMemoryRepository.save(ArticleView.init(
-                    sequence++,
-                    articleId,
-                    userId
-            ));
-            articleViewCountMemoryRepository.increase(articleId);
-        } else {
-            if (findArticleView.getUpdatedAt().plusDays(1).compareTo(LocalDateTime.now()) < 0) {
-                articleViewMemoryRepository.update(findArticleView.update());
-                articleViewCountMemoryRepository.increase(articleId);
-            } else {
-                return ArticleViewCountResponse.from(articleId, null);
-            }
+        ArticleView articleView = articleViewRepository.findByArticleIdAndUserId(articleId, userId)
+                .orElse(null);
+        ArticleStat stat = articleStatRepository.findById(articleId)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+
+        if (articleView == null) {
+            return getViewCountIfNotSaved(articleId, userId, stat);
         }
+        return getViewCountIfSaved(articleId, articleView, stat);
+    }
+
+    private ArticleViewCountResponse getViewCountIfNotSaved(Long articleId, Long userId, ArticleStat stat) {
+        articleViewRepository.save(ArticleView.init(
+                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))));
+
+        stat.incrementArticleViewCount();
 
         return ArticleViewCountResponse.from(
                 articleId,
-                articleViewCountMemoryRepository.read(articleId)
+                stat.getArticleViewCount()
         );
+    }
+
+    private static ArticleViewCountResponse getViewCountIfSaved(Long articleId, ArticleView articleView, ArticleStat stat) {
+        if (articleView.getUpdatedAt().plusDays(1).isBefore(LocalDateTime.now())) {
+            stat.incrementArticleViewCount();
+
+            return ArticleViewCountResponse.from(
+                    articleId,
+                    stat.getArticleViewCount());
+
+        } else {
+            return ArticleViewCountResponse.from(
+                    articleId,
+                    null
+            );
+        }
     }
 
     public ArticleViewCountResponse readCount(Long articleId) {
         return ArticleViewCountResponse.from(
                 articleId,
-                articleViewCountMemoryRepository.read(articleId)
+                articleStatRepository.findById(articleId)
+                        .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"))
+                        .getArticleViewCount()
         );
     }
+
 }
