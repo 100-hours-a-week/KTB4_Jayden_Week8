@@ -15,7 +15,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                 select a.articleId, a.user, a.title, a.content, a.contentImages, a.createdAt
                     from Article a
                     where a.deletedAt is null and a.isArticleHidden is false
-                    order by a.articleId asc
+                    order by a.articleId desc
                     limit :pageSize
             """)
     List<Article> findAllInfiniteScroll(Long pageSize);
@@ -23,8 +23,8 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("""
                 select a.articleId, a.user, a.title, a.content, a.contentImages, a.createdAt
                     from Article a
-                    where a.articleId > :lastArticleId and a.deletedAt is null and a.isArticleHidden is false
-                    order by a.articleId asc
+                    where a.articleId < :lastArticleId and a.deletedAt is null and a.isArticleHidden is false
+                    order by a.articleId desc
                     limit :pageSize
             """)
     List<Article> findAllInfiniteScroll(Long pageSize, Long lastArticleId);

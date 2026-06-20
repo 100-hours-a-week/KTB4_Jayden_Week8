@@ -49,7 +49,7 @@ public class ArticleViewService {
         );
     }
 
-    private static ArticleViewCountResponse getViewCountIfSaved(Long articleId, ArticleView articleView, ArticleStat stat) {
+    private ArticleViewCountResponse getViewCountIfSaved(Long articleId, ArticleView articleView, ArticleStat stat) {
         if (articleView.getUpdatedAt().plusDays(1).isBefore(LocalDateTime.now())) {
             stat.incrementArticleViewCount();
 

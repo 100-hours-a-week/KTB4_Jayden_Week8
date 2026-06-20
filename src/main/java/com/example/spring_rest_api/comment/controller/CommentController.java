@@ -6,6 +6,7 @@ import com.example.spring_rest_api.comment.service.request.CommentUpdateRequest;
 import com.example.spring_rest_api.comment.service.response.CommentCountResponse;
 import com.example.spring_rest_api.comment.service.response.CommentResponse;
 import com.example.spring_rest_api.common.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/articles/{articleId}/comments")
-    public ResponseEntity<ApiResponse<CommentResponse>> create(@PathVariable Long articleId, @RequestBody CommentCreateRequest request) {
+    public ResponseEntity<ApiResponse<CommentResponse>> create(@PathVariable Long articleId, @Valid @RequestBody CommentCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(
                         "comment_create_success",
@@ -28,7 +29,7 @@ public class CommentController {
     }
 
     @PutMapping("/articles/{articleId}/comments/{commentId}")
-    public ResponseEntity<ApiResponse<CommentResponse>> update(@PathVariable Long articleId, @PathVariable Long commentId, @RequestBody CommentUpdateRequest request) {
+    public ResponseEntity<ApiResponse<CommentResponse>> update(@PathVariable Long articleId, @PathVariable Long commentId, @Valid @RequestBody CommentUpdateRequest request) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_update_success",
                 commentService.update(articleId, commentId, request)

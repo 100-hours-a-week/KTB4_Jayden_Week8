@@ -1,90 +1,88 @@
 package com.example.spring_rest_api.comment.service;
 
+import com.example.spring_rest_api.article.entity.ArticleStat;
+import com.example.spring_rest_api.article.repository.ArticleRepository;
+import com.example.spring_rest_api.article.repository.ArticleStatRepository;
 import com.example.spring_rest_api.comment.entity.Comment;
-import com.example.spring_rest_api.comment.repository.CommentCountMemoryRepository;
-import com.example.spring_rest_api.comment.repository.CommentMemoryRepository;
+import com.example.spring_rest_api.comment.repository.CommentRepository;
 import com.example.spring_rest_api.comment.service.request.CommentCreateRequest;
 import com.example.spring_rest_api.comment.service.request.CommentUpdateRequest;
 import com.example.spring_rest_api.comment.service.response.CommentCountResponse;
 import com.example.spring_rest_api.comment.service.response.CommentResponse;
 import com.example.spring_rest_api.common.exception.NotFoundException;
-import com.example.spring_rest_api.user.repository.UserMemoryRepository;
+import com.example.spring_rest_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
-    private final CommentMemoryRepository commentMemoryRepository;
-    private final CommentCountMemoryRepository commentCountMemoryRepository;
-    private final UserMemoryRepository userMemoryRepository;
-    private final ArticleMemoryRepository articleMemoryRepository;
-    private Long sequence = 0L;
+    private final CommentRepository commentRepository;
+    private final ArticleStatRepository articleStatRepository;
+    private final UserRepository userRepository;
+    private final ArticleRepository articleRepository;
 
+    @Transactional
     public CommentResponse create(Long articleId, CommentCreateRequest request) {
-        throwIfArticleNotFound(articleId);
+        ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        stat.increaseCommentCount();
 
-        commentCountMemoryRepository.increase(articleId);
-        return CommentResponse.from(commentMemoryRepository.save(Comment.create(
-                sequence++,
-                articleId,
-                request.getUserId(),
-                userMemoryRepository.findById(request.getUserId()).getProfileImage(),
-                request.getCommentText(),
-                request.getParentCommentId()
-        )));
+        Comment comment = Comment.create(
+                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                userRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
+                request.getParentCommentId() == null ? null : request.getParentCommentId(),
+                request.getCommentText()
+        );
+        return CommentResponse.from(comment);
     }
 
+    @Transactional
     public CommentResponse update(Long articleId, Long commentId, CommentUpdateRequest request) {
-        throwIfArticleNotFound(articleId);
+        articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
 
-        Comment updated = commentMemoryRepository.findById(commentId).update(request.getCommentText());
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
         return CommentResponse.from(
-                commentMemoryRepository.update(updated)
+                comment.update(request.getCommentText())
         );
     }
 
+    @Transactional
     public CommentResponse delete(Long articleId, Long commentId) {
-        throwIfArticleNotFound(articleId);
+        ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        stat.decreaseCommentCount();
 
-        Comment deleted = commentMemoryRepository.findById(commentId).delete();
-        commentCountMemoryRepository.decrease(articleId);
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
         return CommentResponse.from(
-                commentMemoryRepository.delete(deleted)
+                comment.delete()
         );
     }
 
     public CommentResponse read(Long articleId, Long commentId) {
-        throwIfArticleNotFound(articleId);
+        articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
-        return CommentResponse.from(
-                commentMemoryRepository.findById(commentId)
-        );
+        return CommentResponse.from(comment);
     }
 
     public List<CommentResponse> readAllInfiniteScroll(Long articleId, Long pageSize, Long lastParentCommentId, Long lastCommentId) {
-        return (lastParentCommentId == null && lastCommentId == null) ?
-                commentMemoryRepository.findAllInfiniteScroll(articleId, pageSize).stream()
-                .map(CommentResponse::from)
-                .toList() :
-                commentMemoryRepository.findAllInfiniteScroll(articleId, pageSize, lastParentCommentId, lastCommentId).stream()
+        List<Comment> comments = lastCommentId == null && lastParentCommentId == null ?
+                commentRepository.findAllInfiniteScroll(articleId, pageSize) :
+                commentRepository.findAllInfiniteScroll(articleId, pageSize, lastParentCommentId, lastCommentId);
+        return comments.stream()
                 .map(CommentResponse::from)
                 .toList();
     }
 
     public CommentCountResponse readCount(Long articleId) {
+        ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
         return CommentCountResponse.from(
                 articleId,
-                commentCountMemoryRepository.read(articleId)
+                stat.getCommentCount()
         );
-    }
-
-
-    private void throwIfArticleNotFound(Long articleId) {
-        if (articleMemoryRepository.findById(articleId) == null) {
-            throw new NotFoundException("ARTICLE_NOT_FOUND");
-        }
     }
 }

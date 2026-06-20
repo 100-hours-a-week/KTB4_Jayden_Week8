@@ -35,7 +35,7 @@ public class ArticleLikeService {
 
         ArticleStat stat = articleStatRepository.findById(articleId)
                 .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
-        stat.incrementArticleLikeCount();
+        stat.increaseArticleLikeCount();
 
         return ArticleLikeCountResponse.from(
                 articleId,
@@ -52,7 +52,7 @@ public class ArticleLikeService {
 
         ArticleStat stat = articleStatRepository.findById(articleId)
                 .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
-        stat.decrementArticleLikeCount();
+        stat.decreaseArticleLikeCount();
 
         return ArticleLikeCountResponse.from(
                 articleId,

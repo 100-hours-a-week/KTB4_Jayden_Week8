@@ -35,15 +35,19 @@ public class ArticleStat {
         return articleStat;
     }
 
-    public void incrementCommentCount() {
+    public void increaseCommentCount() {
         this.commentCount++;
     }
 
-    public void incrementArticleLikeCount() {
+    public void decreaseCommentCount() {
+        this.commentCount--;
+    }
+
+    public void increaseArticleLikeCount() {
         this.articleLikeCount++;
     }
 
-    public void decrementArticleLikeCount() {
+    public void decreaseArticleLikeCount() {
         this.articleLikeCount--;
     }
 
@@ -53,5 +57,9 @@ public class ArticleStat {
 
     public void incrementArticleReportCount() {
         this.articleReportCount++;
+
+        if (this.getArticleReportCount() >= 5) {
+            article.hideArticle();
+        }
     }
 }
