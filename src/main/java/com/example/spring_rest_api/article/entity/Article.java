@@ -29,7 +29,7 @@ public class Article {
     private LocalDateTime deletedAt;
     private boolean isArticleHidden;
 
-    @OneToOne(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToOne(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private ArticleStat articleStat;
 
     public static Article create(User user, String title, String content, List<String> contentImages) {
