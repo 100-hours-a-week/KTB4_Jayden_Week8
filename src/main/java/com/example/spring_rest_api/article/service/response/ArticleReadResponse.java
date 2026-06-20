@@ -17,6 +17,7 @@ public class ArticleReadResponse {
     private String content;
     private List<String> contentImages;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private Long commentCount;
     private Long articleLikeCount;
     private Long articleViewCount;
@@ -29,6 +30,7 @@ public class ArticleReadResponse {
         response.content = article.getContent();
         response.contentImages = article.getContentImages();
         response.createdAt = article.getCreatedAt();
+        response.updatedAt = article.getUpdatedAt();
         response.commentCount = articleStat.getCommentCount();
         response.articleLikeCount = articleStat.getArticleLikeCount();
         response.articleViewCount = articleStat.getArticleViewCount();

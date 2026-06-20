@@ -26,6 +26,7 @@ public class Article {
     private String content;
     private List<String> contentImages;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
     private boolean isArticleHidden;
 
@@ -39,6 +40,7 @@ public class Article {
         article.content = content;
         article.contentImages = contentImages;
         article.createdAt = LocalDateTime.now();
+        article.updatedAt = null;
         article.deletedAt = null;
         article.isArticleHidden = false;
 
@@ -51,6 +53,7 @@ public class Article {
         this.title = title;
         this.content = content;
         this.contentImages = contentImages;
+        this.updatedAt = LocalDateTime.now();
         return this;
     }
 

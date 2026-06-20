@@ -24,7 +24,7 @@ public class ArticleUpdateHistory {
     private String title;
     private String content;
     private List<String> contentImages;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
 
     public static ArticleUpdateHistory create(Article article, String title, String content, List<String> contentImages) {
         ArticleUpdateHistory history = new ArticleUpdateHistory();
@@ -32,7 +32,7 @@ public class ArticleUpdateHistory {
         history.title = title;
         history.content = content;
         history.contentImages = contentImages;
-        history.updatedAt = LocalDateTime.now();
+        history.createdAt = LocalDateTime.now();
         return history;
     }
 }
