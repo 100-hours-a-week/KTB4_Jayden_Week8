@@ -18,12 +18,14 @@ public class ArticleViewController {
 
     @PostMapping("/views/articles/{articleId}/users/{userId}")
     public ResponseEntity<ApiResponse<ArticleViewCountResponse>> increaseCount(@PathVariable Long articleId, @PathVariable Long userId) {
-        return articleViewService.increaseCount(articleId, userId).getViewCount() == null ?
+        ArticleViewCountResponse response = articleViewService.increaseCount(articleId, userId);
+
+        return response.getViewCount() == null ?
                 ResponseEntity.noContent().build() :
                 ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(
                         "view_count_success",
-                        articleViewService.increaseCount(articleId, userId)
+                        response
                         ));
     }
 

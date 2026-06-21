@@ -50,6 +50,7 @@ public class ArticleViewService {
 
     private ArticleViewCountResponse getViewCountIfSaved(Long articleId, ArticleView articleView, ArticleStat stat) {
         if (articleView.getUpdatedAt().plusDays(1).isBefore(LocalDateTime.now())) {
+            articleView.update();
             stat.incrementArticleViewCount();
 
             return ArticleViewCountResponse.from(

@@ -34,8 +34,7 @@ public class ArticleView {
         return articleView;
     }
 
-    public ArticleView update() {
+    public void update() {
         this.updatedAt = LocalDateTime.now();
-        return this;
     }
 }
