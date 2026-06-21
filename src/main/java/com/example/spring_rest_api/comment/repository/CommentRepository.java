@@ -14,7 +14,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
                 select new com.example.spring_rest_api.comment.service.response.CommentResponse(c.commentId, c.user.userId, c.user.profileImage, c.commentText, c.createdAt, c.updatedAt, c.deletedAt, c.parentCommentId)
                     from Comment c
+                    left join Comment cp
+                        on c.commentId = cp.parentCommentId
                     where c.article.articleId = :articleId
+                        and (
+                            c.deletedAt is null
+                            or (c.deletedAt is not null and cp.commentId is not null and cp.deletedAt is null)
+                        )
                     order by c.parentCommentId asc, c.commentId asc
                     limit :pageSize
             """)
@@ -23,9 +29,17 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
                 select new com.example.spring_rest_api.comment.service.response.CommentResponse(c.commentId, c.user.userId, c.user.profileImage, c.commentText, c.createdAt, c.updatedAt, c.deletedAt, c.parentCommentId)
                     from Comment c
+                    left join Comment cp
+                        on c.commentId = cp.parentCommentId
                     where c.article.articleId = :articleId
-                        and (c.parentCommentId > :lastParentCommentId or
-                            (c.parentCommentId = :lastParentCommentId and c.commentId > :lastCommentId))
+                        and (
+                            c.deletedAt is null
+                            or (c.deletedAt is not null and cp.commentId is not null and cp.deletedAt is null)
+                        )
+                        and (
+                            c.parentCommentId > :lastParentCommentId or
+                            (c.parentCommentId = :lastParentCommentId and c.commentId > :lastCommentId)
+                        )
                     order by c.parentCommentId asc, c.commentId asc
                     limit :pageSize
             """)
