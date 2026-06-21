@@ -31,6 +31,7 @@ public class CommentResponse {
         return response;
     }
 
+    //무한스크롤 쿼리 DTO
     public CommentResponse(Long commentId, Long userId, String profileImage, String commentText, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt, Long parentCommentId) {
         this.commentId = commentId;
         this.userId = userId;

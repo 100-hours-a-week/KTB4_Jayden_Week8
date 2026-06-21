@@ -37,7 +37,7 @@ public class ArticleReadResponse {
         return response;
     }
 
-    //무한스크롤 쿼리용
+    //무한스크롤 쿼리 DTO
     public ArticleReadResponse(Long articleId, Long userId, String title, String content, List<String> contentImages, LocalDateTime createdAt, LocalDateTime updatedAt, Long commentCount, Long articleLikeCount, Long articleViewCount) {
         this.articleId = articleId;
         this.userId = userId;
