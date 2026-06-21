@@ -1,5 +1,6 @@
 package com.example.spring_rest_api.article.entity;
 
+import com.example.spring_rest_api.common.exception.BadRequestException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,7 +40,9 @@ public class ArticleStat {
 
     public void decreaseCommentCount() {
         if (this.commentCount > 0) {
-        this.commentCount--;
+            this.commentCount--;
+        } else {
+            throw new BadRequestException("COMMENT COUNT CANNOT BE NEGATIVE");
         }
     }
 
@@ -50,6 +53,8 @@ public class ArticleStat {
     public void decreaseArticleLikeCount() {
         if (this.articleLikeCount > 0) {
             this.articleLikeCount--;
+        } else {
+            throw new BadRequestException("LIKE COUNT CANNOT BE NEGATIVE");
         }
     }
 
