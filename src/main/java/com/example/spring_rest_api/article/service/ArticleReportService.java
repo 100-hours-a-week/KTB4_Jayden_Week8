@@ -2,6 +2,7 @@ package com.example.spring_rest_api.article.service;
 
 import com.example.spring_rest_api.article.entity.ArticleStat;
 import com.example.spring_rest_api.article.entity.Report;
+import com.example.spring_rest_api.article.entity.ReportType;
 import com.example.spring_rest_api.article.repository.ArticleReportRepository;
 import com.example.spring_rest_api.article.repository.ArticleRepository;
 import com.example.spring_rest_api.article.repository.ArticleStatRepository;
@@ -32,7 +33,7 @@ public class ArticleReportService {
         reportRepository.save(Report.create(
                 articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
                 userRepository.findById(reportingUserId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
-                request.getReportType(),
+                ReportType.valueOf(request.getReportType()),
                 request.getReason()
         ));
     }

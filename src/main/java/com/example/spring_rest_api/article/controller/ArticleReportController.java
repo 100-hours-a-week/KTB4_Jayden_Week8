@@ -16,7 +16,7 @@ public class ArticleReportController {
     private final ArticleReportService articleReportService;
 
     @PostMapping("/articles/{articleId}/users/{reportingUserId}/report")
-    public ResponseEntity<?> report(@PathVariable Long articleId, @PathVariable Long reportingUserId, @RequestBody @Valid ArticleReportRequest request) {
+    public ResponseEntity<?> report(@PathVariable Long articleId, @PathVariable Long reportingUserId, @Valid @RequestBody ArticleReportRequest request) {
         articleReportService.report(articleId, reportingUserId, request);
         return ResponseEntity.noContent().build();
     }

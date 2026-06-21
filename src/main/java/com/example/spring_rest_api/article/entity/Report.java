@@ -25,9 +25,13 @@ public class Report {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Enumerated(EnumType.STRING)
     private ReportType reportType;
+
     private String reason;
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
     public static Report create(Article article, User user, ReportType reportType, String reason) {
