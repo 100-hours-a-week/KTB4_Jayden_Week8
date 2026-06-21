@@ -20,7 +20,7 @@ public class ArticleTempSaveService {
     @Transactional
     public void saveTempArticle(Long userId, ArticleTempSaveRequest request) {
         tempSaveRepository.save(TempArticle.create(
-                userRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
+                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                 request.getTitle(),
                 request.getContent(),
                 request.getContentImages()
