@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @ToString
 public class UserResponse {
     private String email;
-    private String password;
     private String nickname;
     private String profileImage;
     private LocalDateTime deletedAt;
@@ -19,7 +18,6 @@ public class UserResponse {
     public static UserResponse from(User user) {
         UserResponse userResponse = new UserResponse();
         userResponse.email = user.getEmail();
-        userResponse.password = user.getPassword();
         userResponse.nickname = user.getNickname();
         userResponse.profileImage = user.getProfileImage();
         userResponse.deletedAt = user.getDeletedAt();
