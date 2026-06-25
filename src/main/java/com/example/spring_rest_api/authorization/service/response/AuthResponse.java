@@ -1,10 +1,10 @@
 package com.example.spring_rest_api.authorization.service.response;
 
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 @Getter
-@ToString
+@NoArgsConstructor
 public class AuthResponse {
     private String token;
 

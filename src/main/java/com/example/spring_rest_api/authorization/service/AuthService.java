@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
-        log.info("Login request: {}", request);
+        log.info("Login request: {}", request.getEmail());
 
         if (request.getEmail().equals("abc@abc.com") && request.getPassword().equals("abc1234!")) {
             return AuthResponse.from("abc1234567890");
@@ -24,7 +24,7 @@ public class AuthService {
     }
 
     public void logout(AuthRequest request) {
-        log.info("Logout request: {}", request);
+        log.info("Logout request: {}", request.getToken());
 
         if (!request.getToken().equals("abc1234567890")) {
             throw new ForbiddenException("TOKEN_NOT_VALID");
