@@ -11,6 +11,7 @@ import com.example.spring_rest_api.comment.service.response.CommentCountResponse
 import com.example.spring_rest_api.comment.service.response.CommentResponse;
 import com.example.spring_rest_api.common.exception.BadRequestException;
 import com.example.spring_rest_api.common.exception.NotFoundException;
+import com.example.spring_rest_api.common.exception.RequestConflictException;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class CommentService {
                 request.getCommentText()
         );
 
+        throwIfNotInArticle(articleId, comment);
+
         ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
         stat.increaseCommentCount();
 
@@ -44,9 +47,12 @@ public class CommentService {
 
     @Transactional
     public CommentResponse update(Long articleId, Long commentId, CommentUpdateRequest request) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
+
+        throwIfNotInArticle(articleId, comment);
+
         articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
 
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
         return CommentResponse.from(
                 comment.update(request.getCommentText())
         );
@@ -54,14 +60,24 @@ public class CommentService {
 
     @Transactional
     public CommentResponse delete(Long articleId, Long commentId) {
-        ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
-        articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
-        stat.decreaseCommentCount();
-
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
+        if (comment.getDeletedAt() != null) {
+            throw new RequestConflictException("이미 삭제된 댓글입니다.");
+        }
+
+        throwIfNotInArticle(articleId, comment);
+
+        ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        stat.decreaseCommentCount();
         return CommentResponse.from(
                 comment.delete()
         );
+    }
+
+    private void throwIfNotInArticle(Long articleId, Comment comment) {
+        if (!comment.getArticle().getArticleId().equals(articleId)) {
+            throw new BadRequestException("다른 게시글의 댓글입니다.");
+        }
     }
 
     public CommentResponse read(Long articleId, Long commentId) {
