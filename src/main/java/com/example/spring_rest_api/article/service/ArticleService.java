@@ -76,7 +76,7 @@ public class ArticleService {
 
     private void throwIfAccessNotValid(Long articleId, Long userId) {
         Article article = articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
-        if (!userId.equals(article.getUser().getUserId()) && userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")).getDeletedAt() != null) {
+        if (!userId.equals(article.getUser().getUserId()) || userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")).getDeletedAt() != null) {
             throw new ForbiddenException("ACCESS_NOT_VALID");
         }
     }
