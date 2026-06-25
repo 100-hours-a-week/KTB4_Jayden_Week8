@@ -108,11 +108,8 @@ public class ArticleService {
     }
 
     public List<ArticleReadResponse> readInfiniteScroll(Long pageSize, Long lastArticleId) {
-        List<ArticleReadResponse> articles = lastArticleId == null ?
+        return lastArticleId == null ?
                 articleRepository.findAllInfiniteScroll(pageSize) :
                 articleRepository.findAllInfiniteScroll(pageSize, lastArticleId);
-
-        return articles.stream()
-                .toList();
     }
 }

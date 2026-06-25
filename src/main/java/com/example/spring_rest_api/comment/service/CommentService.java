@@ -91,11 +91,10 @@ public class CommentService {
     }
 
     public List<CommentResponse> readAllInfiniteScroll(Long articleId, Long pageSize, Long lastParentCommentId, Long lastCommentId) {
-        List<CommentResponse> comments = lastCommentId == null || lastParentCommentId == null ?
+        return lastCommentId == null || lastParentCommentId == null ?
                 commentRepository.findAllInfiniteScroll(articleId, pageSize) :
                 commentRepository.findAllInfiniteScroll(articleId, pageSize, lastParentCommentId, lastCommentId);
-        return comments.stream()
-                .toList();
+
     }
 
     public CommentCountResponse readCount(Long articleId) {
