@@ -1,10 +1,17 @@
 spring:
   application:
     name: spring-rest-api
+
   h2:
     console:
       enabled: true
       path: /h2-console
+
+  config:
+    import: optional:file:.env[.properties]
+
+  profiles:
+    active: development
 
   # 스크립트 자동실행
 #  sql:
@@ -34,3 +41,8 @@ decorator:
       enable-logging: true
       logging: slf4j
       multiline: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-exp-seconds: 300
+  refresh-token-exp-seconds: 12096000
