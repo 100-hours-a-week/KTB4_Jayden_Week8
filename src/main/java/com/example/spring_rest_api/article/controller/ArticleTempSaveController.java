@@ -7,6 +7,7 @@ import com.example.spring_rest_api.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,14 +15,14 @@ import org.springframework.web.bind.annotation.*;
 public class ArticleTempSaveController {
     private final ArticleTempSaveService articleTempSaveService;
 
-    @PutMapping("/articles/temp-save/{userId}")
-    public ResponseEntity<?> saveTempArticle(@PathVariable Long userId, @Valid @RequestBody ArticleTempSaveRequest request) {
+    @PutMapping("/articles/temp-save")
+    public ResponseEntity<?> saveTempArticle(@AuthenticationPrincipal Long userId, @Valid @RequestBody ArticleTempSaveRequest request) {
         articleTempSaveService.saveTempArticle(userId, request);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/articles/temp-save/{userId}")
-    public ResponseEntity<ApiResponse<ArticleTempSaveResponse>> readTempArticle(@PathVariable Long userId) {
+    @GetMapping("/articles/temp-save")
+    public ResponseEntity<ApiResponse<ArticleTempSaveResponse>> readTempArticle(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "temp_save_load_success",
                 articleTempSaveService.readTempArticle(userId)
