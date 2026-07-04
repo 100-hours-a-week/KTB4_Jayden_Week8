@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,32 +27,32 @@ public class UserController {
                 ));
     }
 
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> read(@PathVariable Long userId) {
+    @GetMapping("/users/me")
+    public ResponseEntity<ApiResponse<UserResponse>> read(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "get_user_info_success",
                 userService.read(userId)
         ));
     }
 
-    @PatchMapping("/users/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> updateInformation(@PathVariable Long userId, @Valid @RequestBody UserUpdateInfoRequest request) {
+    @PatchMapping("/users/me")
+    public ResponseEntity<ApiResponse<UserResponse>> updateInformation(@AuthenticationPrincipal Long userId, @Valid @RequestBody UserUpdateInfoRequest request) {
         return ResponseEntity.ok(ApiResponse.of(
                 "user_info_update_success",
                 userService.updateInformation(userId, request)
         ));
     }
 
-    @PatchMapping("/users/{userId}/password")
-    public ResponseEntity<ApiResponse<UserResponse>> updatePassword(@PathVariable Long userId, @Valid @RequestBody UserUpdatePasswordRequest request) {
+    @PatchMapping("/users/me/password")
+    public ResponseEntity<ApiResponse<UserResponse>> updatePassword(@AuthenticationPrincipal Long userId, @Valid @RequestBody UserUpdatePasswordRequest request) {
         return ResponseEntity.ok(ApiResponse.of(
                 "user_password_update_success",
                 userService.updatePassword(userId, request)
         ));
     }
 
-    @DeleteMapping("/users/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> delete(@PathVariable Long userId) {
+    @DeleteMapping("/users/me")
+    public ResponseEntity<ApiResponse<UserResponse>> delete(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "user_delete_success",
                 userService.delete(userId)

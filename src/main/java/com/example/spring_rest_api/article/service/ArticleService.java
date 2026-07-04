@@ -33,11 +33,11 @@ public class ArticleService {
     private final ArticleUpdateHistoryRepository historyRepository;
 
     @Transactional
-    public ArticleResponse create(ArticleCreateRequest request) {
-        throwIfTooManyRequests(request);
+    public ArticleResponse create(Long userId, ArticleCreateRequest request) {
+        throwIfTooManyRequests(userId);
 
         Article article = articleRepository.save(Article.create(
-                userRepository.findById(request.getUserId()).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
+                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                 request.getTitle(),
                 request.getContent(),
                 request.getContentImages()
@@ -46,8 +46,8 @@ public class ArticleService {
         return ArticleResponse.from(article);
     }
 
-    private void throwIfTooManyRequests(ArticleCreateRequest request) {
-        if (articleRepository.countWithinOneMinute(request.getUserId(), LocalDateTime.now().minusMinutes(1)) >= 3) {
+    private void throwIfTooManyRequests(Long userId) {
+        if (articleRepository.countWithinOneMinute(userId, LocalDateTime.now().minusMinutes(1)) >= 3) {
             throw new TooManyRequestsException("1분 내 글 3개까지 작성할 수 있습니다.");
         }
     }

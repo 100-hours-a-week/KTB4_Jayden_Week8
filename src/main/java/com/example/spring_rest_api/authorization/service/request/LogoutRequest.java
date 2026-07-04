@@ -5,8 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class AuthRequest {
-    private String email;
-    private String password;
-    private String token;
+public class LogoutRequest {
+    private String refreshToken;
 }

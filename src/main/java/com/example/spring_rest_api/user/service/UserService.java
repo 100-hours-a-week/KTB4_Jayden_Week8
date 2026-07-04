@@ -9,6 +9,7 @@ import com.example.spring_rest_api.user.service.request.UserUpdateInfoRequest;
 import com.example.spring_rest_api.user.service.request.UserUpdatePasswordRequest;
 import com.example.spring_rest_api.user.service.response.UserResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserResponse create(UserCreateRequest request) {
@@ -29,7 +31,7 @@ public class UserService {
 
         return UserResponse.from(userRepository.save(User.create(
                 request.getEmail(),
-                request.getPassword(),
+                passwordEncoder.encode(request.getPassword()),
                 request.getNickname(),
                 request.getProfileImage()
         )));
@@ -64,7 +66,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
         return UserResponse.from(user.updatePassword(
-                request.getPassword()
+                passwordEncoder.encode(request.getPassword())
         ));
     }
 
