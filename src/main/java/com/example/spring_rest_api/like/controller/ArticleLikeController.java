@@ -6,6 +6,7 @@ import com.example.spring_rest_api.like.service.response.ArticleLikeCountRespons
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 public class ArticleLikeController {
     private final ArticleLikeService likeService;
 
-    @PostMapping("/likes/articles/{articleId}/users/{userId}")
-    public ResponseEntity<ApiResponse<ArticleLikeCountResponse>> like(@PathVariable Long articleId, @PathVariable Long userId) {
+    @PostMapping("/likes/articles/{articleId}")
+    public ResponseEntity<ApiResponse<ArticleLikeCountResponse>> like(@PathVariable Long articleId, @AuthenticationPrincipal Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(
                         "like_success",
@@ -22,8 +23,8 @@ public class ArticleLikeController {
                 ));
     }
 
-    @DeleteMapping("/likes/articles/{articleId}/users/{userId}")
-    public ResponseEntity<ApiResponse<ArticleLikeCountResponse>> unlike(@PathVariable Long articleId, @PathVariable Long userId) {
+    @DeleteMapping("/likes/articles/{articleId}")
+    public ResponseEntity<ApiResponse<ArticleLikeCountResponse>> unlike(@PathVariable Long articleId, @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "unlike_success",
                 likeService.unlike(articleId, userId)

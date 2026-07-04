@@ -7,7 +7,6 @@ import com.example.spring_rest_api.article.repository.ArticleRepository;
 import com.example.spring_rest_api.article.repository.ArticleStatRepository;
 import com.example.spring_rest_api.article.repository.ArticleUpdateHistoryRepository;
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
-import com.example.spring_rest_api.article.service.request.ArticleDeleteRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
@@ -53,8 +52,8 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleResponse update(Long articleId, ArticleUpdateRequest request) {
-        throwIfAccessNotValid(articleId, request.getUserId());
+    public ArticleResponse update(Long userId, Long articleId, ArticleUpdateRequest request) {
+        throwIfAccessNotValid(userId, articleId);
 
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
@@ -75,7 +74,7 @@ public class ArticleService {
         );
     }
 
-    private void throwIfAccessNotValid(Long articleId, Long userId) {
+    private void throwIfAccessNotValid(Long userId, Long articleId) {
         Article article = articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
         if (!userId.equals(article.getUser().getUserId()) || article.getUser().getDeletedAt() != null) {
             throw new ForbiddenException("ACCESS_NOT_VALID");
@@ -83,10 +82,11 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleResponse delete(Long articleId, ArticleDeleteRequest request) {
+    public ArticleResponse delete(Long userId, Long articleId) {
+        throwIfAccessNotValid(userId, articleId);
+
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
-        throwIfAccessNotValid(articleId, request.getUserId());
 
         return ArticleResponse.from(article.delete());
     }

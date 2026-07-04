@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,35 +21,35 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/articles/{articleId}/comments")
-    public ResponseEntity<ApiResponse<CommentResponse>> create(@PathVariable Long articleId, @Valid @RequestBody CommentCreateRequest request) {
+    public ResponseEntity<ApiResponse<CommentResponse>> create(@AuthenticationPrincipal Long userId, @PathVariable Long articleId, @Valid @RequestBody CommentCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.of(
                         "comment_create_success",
-                        commentService.create(articleId, request)
+                        commentService.create(userId, articleId, request)
                 ));
     }
 
     @PutMapping("/articles/{articleId}/comments/{commentId}")
-    public ResponseEntity<ApiResponse<CommentResponse>> update(@PathVariable Long articleId, @PathVariable Long commentId, @Valid @RequestBody CommentUpdateRequest request) {
+    public ResponseEntity<ApiResponse<CommentResponse>> update(@AuthenticationPrincipal Long userId, @PathVariable Long articleId, @PathVariable Long commentId, @Valid @RequestBody CommentUpdateRequest request) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_update_success",
-                commentService.update(articleId, commentId, request)
+                commentService.update(userId, articleId, commentId, request)
         ));
     }
 
     @DeleteMapping("/articles/{articleId}/comments/{commentId}")
-    public ResponseEntity<ApiResponse<CommentResponse>> delete(@PathVariable Long articleId, @PathVariable Long commentId) {
+    public ResponseEntity<ApiResponse<CommentResponse>> delete(@AuthenticationPrincipal Long userId, @PathVariable Long articleId, @PathVariable Long commentId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_delete_success",
-                commentService.delete(articleId, commentId)
+                commentService.delete(userId, articleId, commentId)
         ));
     }
 
     @GetMapping("/articles/{articleId}/comments/{commentId}")
-    public ResponseEntity<ApiResponse<CommentResponse>> read(@PathVariable Long articleId, @PathVariable Long commentId) {
+    public ResponseEntity<ApiResponse<CommentResponse>> read(@AuthenticationPrincipal Long userId, @PathVariable Long articleId, @PathVariable Long commentId) {
         return ResponseEntity.ok(ApiResponse.of(
                 "comment_load_success",
-                commentService.read(articleId, commentId)
+                commentService.read(userId, articleId, commentId)
         ));
     }
 

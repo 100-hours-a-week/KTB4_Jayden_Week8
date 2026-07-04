@@ -6,6 +6,7 @@ import com.example.spring_rest_api.view.service.response.ArticleViewCountRespons
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticleViewController {
     private final ArticleViewService articleViewService;
 
-    @PostMapping("/views/articles/{articleId}/users/{userId}")
-    public ResponseEntity<ApiResponse<ArticleViewCountResponse>> increaseCount(@PathVariable Long articleId, @PathVariable Long userId) {
+    @PostMapping("/views/articles/{articleId}")
+    public ResponseEntity<ApiResponse<ArticleViewCountResponse>> increaseCount(@PathVariable Long articleId, @AuthenticationPrincipal Long userId) {
         ArticleViewCountResponse response = articleViewService.increaseCount(articleId, userId);
 
         return response.getViewCount() == null ?

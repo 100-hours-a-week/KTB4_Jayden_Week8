@@ -2,7 +2,6 @@ package com.example.spring_rest_api.article.controller;
 
 import com.example.spring_rest_api.article.service.ArticleService;
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
-import com.example.spring_rest_api.article.service.request.ArticleDeleteRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
@@ -31,18 +30,25 @@ public class ArticleController {
     }
 
     @PutMapping("/articles/{articleId}")
-    public ResponseEntity<ApiResponse<ArticleResponse>> update(@PathVariable Long articleId, @Valid @RequestBody ArticleUpdateRequest request) {
+    public ResponseEntity<ApiResponse<ArticleResponse>> update(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long articleId,
+            @Valid @RequestBody ArticleUpdateRequest request
+    ) {
         return ResponseEntity.ok(ApiResponse.of(
                 "article_update_success",
-                articleService.update(articleId, request)
+                articleService.update(userId, articleId, request)
         ));
     }
 
     @DeleteMapping("/articles/{articleId}")
-    public ResponseEntity<ApiResponse<ArticleResponse>> delete(@PathVariable Long articleId,  @Valid @RequestBody ArticleDeleteRequest request) {
+    public ResponseEntity<ApiResponse<ArticleResponse>> delete(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long articleId
+    ) {
         return ResponseEntity.ok(ApiResponse.of(
                 "article_delete_success",
-                articleService.delete(articleId, request)
+                articleService.delete(userId, articleId)
         ));
     }
 
