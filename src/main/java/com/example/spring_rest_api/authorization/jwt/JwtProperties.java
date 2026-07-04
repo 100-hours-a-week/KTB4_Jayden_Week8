@@ -1,4 +1,4 @@
-package com.example.spring_rest_api.authorization.service;
+package com.example.spring_rest_api.authorization.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

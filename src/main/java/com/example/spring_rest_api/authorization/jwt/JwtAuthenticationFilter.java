@@ -1,4 +1,4 @@
-package com.example.spring_rest_api.authorization.service;
+package com.example.spring_rest_api.authorization.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,8 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             List.of()
                     );
 
-                    SecurityContextHolder.getContext()
-                            .setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
 
             } catch (Exception e) {

@@ -3,10 +3,12 @@ package com.example.spring_rest_api.authorization.service;
 import com.example.spring_rest_api.authorization.entity.LoginResult;
 import com.example.spring_rest_api.authorization.entity.RefreshToken;
 import com.example.spring_rest_api.authorization.entity.TokenResult;
+import com.example.spring_rest_api.authorization.jwt.JwtProvider;
 import com.example.spring_rest_api.authorization.repository.RefreshTokenRepository;
 import com.example.spring_rest_api.authorization.service.request.LoginRequest;
 import com.example.spring_rest_api.authorization.service.response.LoginResponse;
 import com.example.spring_rest_api.authorization.service.response.TokenInfo;
+import com.example.spring_rest_api.common.exception.ForbiddenException;
 import com.example.spring_rest_api.common.exception.UnauthorizedException;
 import com.example.spring_rest_api.user.entity.User;
 import com.example.spring_rest_api.user.repository.UserRepository;
@@ -88,11 +90,9 @@ public class AuthService {
         );
     }
 
+    @Transactional
     public void logout(Long userId) {
-        // 리프레시 토큰 DB에서 삭제하기
+        userRepository.findById(userId).orElseThrow(() -> new ForbiddenException("ACCESS_DENIED"));
         refreshTokenRepository.deleteByUserId(userId);
-
-
-        // access token blacklist
     }
 }

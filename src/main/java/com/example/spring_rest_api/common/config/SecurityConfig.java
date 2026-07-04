@@ -1,6 +1,6 @@
 package com.example.spring_rest_api.common.config;
 
-import com.example.spring_rest_api.authorization.service.JwtAuthenticationFilter;
+import com.example.spring_rest_api.authorization.jwt.JwtAuthenticationFilter;
 import com.example.spring_rest_api.common.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.spring_rest_api.authorization.service;
+package com.example.spring_rest_api.authorization.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

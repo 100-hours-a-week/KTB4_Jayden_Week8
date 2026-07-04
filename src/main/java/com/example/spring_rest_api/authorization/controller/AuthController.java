@@ -4,7 +4,6 @@ import com.example.spring_rest_api.authorization.entity.LoginResult;
 import com.example.spring_rest_api.authorization.entity.TokenResult;
 import com.example.spring_rest_api.authorization.service.AuthService;
 import com.example.spring_rest_api.authorization.service.request.LoginRequest;
-import com.example.spring_rest_api.authorization.service.request.LogoutRequest;
 import com.example.spring_rest_api.authorization.service.response.LoginResponse;
 import com.example.spring_rest_api.authorization.service.response.TokenInfo;
 import com.example.spring_rest_api.common.response.ApiResponse;
@@ -71,7 +70,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<ApiResponse<LoginResponse>> logout(
+    public ResponseEntity<ApiResponse<?>> logout(
             @AuthenticationPrincipal Long userId,
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse httpResponse
