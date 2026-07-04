@@ -162,3 +162,18 @@ CREATE TABLE `article_stats` (
                                      FOREIGN KEY (`article_id`)
                                          REFERENCES `articles` (`article_id`)
 );
+
+
+CREATE SEQUENCE refresh_token_seq
+    START WITH 1
+    INCREMENT BY 50;
+
+CREATE TABLE refresh_token (
+                               id BIGINT NOT NULL DEFAULT NEXT VALUE FOR refresh_token_seq,
+                               token VARCHAR(255) NOT NULL,
+                               user_id BIGINT NOT NULL,
+                               expires_at TIMESTAMP NOT NULL,
+
+                               CONSTRAINT pk_refresh_token PRIMARY KEY (id),
+                               CONSTRAINT uk_refresh_token_token UNIQUE (token)
+);
