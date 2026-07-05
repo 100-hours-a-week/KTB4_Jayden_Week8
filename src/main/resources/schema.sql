@@ -163,13 +163,8 @@ CREATE TABLE `article_stats` (
                                          REFERENCES `articles` (`article_id`)
 );
 
-
-CREATE SEQUENCE refresh_token_seq
-    START WITH 1
-    INCREMENT BY 50;
-
 CREATE TABLE refresh_token (
-                               id BIGINT NOT NULL DEFAULT NEXT VALUE FOR refresh_token_seq,
+                               id BIGINT NOT NULL,
                                token VARCHAR(255) NOT NULL,
                                user_id BIGINT NOT NULL,
                                expires_at TIMESTAMP NOT NULL,
@@ -177,3 +172,13 @@ CREATE TABLE refresh_token (
                                CONSTRAINT pk_refresh_token PRIMARY KEY (id),
                                CONSTRAINT uk_refresh_token_token UNIQUE (token)
 );
+
+
+CREATE SEQUENCE IF NOT EXISTS users_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS articles_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS article_update_history_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS comments_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS article_reports_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS article_likes_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS article_views_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS refresh_token_seq START WITH 1 INCREMENT BY 50;
