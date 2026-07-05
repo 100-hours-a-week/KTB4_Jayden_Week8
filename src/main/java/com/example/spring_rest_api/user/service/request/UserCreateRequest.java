@@ -3,11 +3,11 @@ package com.example.spring_rest_api.user.service.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
-@ToString
+@AllArgsConstructor
 public class UserCreateRequest {
     @NotBlank
     @Email(message = "이메일을 입력해주세요.")

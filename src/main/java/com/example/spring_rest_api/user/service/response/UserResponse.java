@@ -2,12 +2,12 @@ package com.example.spring_rest_api.user.service.response;
 
 import com.example.spring_rest_api.user.entity.User;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@ToString
+@NoArgsConstructor
 public class UserResponse {
     private String email;
     private String nickname;
