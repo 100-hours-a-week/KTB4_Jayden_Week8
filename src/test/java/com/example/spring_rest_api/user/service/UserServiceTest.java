@@ -144,7 +144,7 @@ class UserServiceTest {
         given(passwordEncoder.encode(request.getPassword())).willReturn(savedUser.getPassword());
 
         //when
-        UserResponse response = userService.create(request);
+        userService.create(request);
 
         //then
         verify(passwordEncoder, times(1)).encode(request.getPassword());
@@ -326,12 +326,6 @@ class UserServiceTest {
         UserUpdatePasswordRequest request = new UserUpdatePasswordRequest(
                 "AbcAbc1234!"
         );
-        User savedUser = User.create(
-                "email@abcd.com",
-                "encodedPassword",
-                "nickname",
-                null
-        );
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
         //when
@@ -367,15 +361,8 @@ class UserServiceTest {
     void deleteNotFoundTest() {
         //given
         Long userId = 1L;
-
-        User saved = User.create(
-                "email@abcd.com",
-                "encodedPassword",
-                "nickname",
-                null
-        );
-
         given(userRepository.findById(userId)).willReturn(Optional.empty());
+
         //when
         //then
         assertThatThrownBy(() -> userService.delete(userId))
