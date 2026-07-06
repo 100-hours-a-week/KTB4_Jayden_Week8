@@ -33,3 +33,8 @@ decorator:
       enable-logging: true
       logging: slf4j
       multiline: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-exp-seconds: 180
+  refresh-token-exp-seconds: 12096000
