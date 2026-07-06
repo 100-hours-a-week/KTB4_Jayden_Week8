@@ -266,12 +266,6 @@ class UserControllerTest {
     @DisplayName("회원 조회 실패 - 404")
     void readNotFoundTest() throws Exception {
         //given
-        UserResponse response = UserResponse.from(User.create(
-                "email@abc.com",
-                "Abcabc1234!",
-                "nickname",
-                null
-        ));
         String token = UUID.randomUUID().toString();
         given(userService.read(anyLong())).willThrow(new NotFoundException("USER_NOT_FOUND"));
         given(jwtProvider.isAccessToken(token)).willReturn(true);
@@ -496,12 +490,6 @@ class UserControllerTest {
         UserUpdatePasswordRequest request = new UserUpdatePasswordRequest(
                 "Abc1234!"
         );
-        UserResponse response = UserResponse.from(User.create(
-                "email@abc.com",
-                "Abc1234!",
-                "change",
-                null
-        ));
         String token = UUID.randomUUID().toString();
         given(userService.updatePassword(anyLong(), any(UserUpdatePasswordRequest.class))).willThrow(new NotFoundException("USER_NOT_FOUND"));
         given(jwtProvider.isAccessToken(token)).willReturn(true);
