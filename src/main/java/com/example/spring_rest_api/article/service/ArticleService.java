@@ -74,13 +74,6 @@ public class ArticleService {
         );
     }
 
-    private void throwIfAccessNotValid(Long userId, Long articleId) {
-        Article article = articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
-        if (!userId.equals(article.getUser().getUserId()) || article.getUser().getDeletedAt() != null) {
-            throw new ForbiddenException("ACCESS_NOT_VALID");
-        }
-    }
-
     @Transactional
     public ArticleResponse delete(Long userId, Long articleId) {
         throwIfAccessNotValid(userId, articleId);
@@ -89,6 +82,13 @@ public class ArticleService {
                 .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
 
         return ArticleResponse.from(article.delete());
+    }
+
+    private void throwIfAccessNotValid(Long userId, Long articleId) {
+        Article article = articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
+        if (!userId.equals(article.getUser().getUserId()) || article.getUser().getDeletedAt() != null) {
+            throw new ForbiddenException("ACCESS_NOT_VALID");
+        }
     }
 
     public ArticleReadResponse read(Long articleId) {
