@@ -80,7 +80,6 @@ public class CommentService {
     public CommentResponse read(Long userId, Long articleId, Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
-        throwIfForbidden(userId, comment);
         throwIfNotInArticle(articleId, comment);
 
         articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));

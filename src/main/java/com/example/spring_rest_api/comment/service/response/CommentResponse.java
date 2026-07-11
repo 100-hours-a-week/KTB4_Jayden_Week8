@@ -22,7 +22,7 @@ public class CommentResponse {
         CommentResponse response = new CommentResponse();
         response.commentId = comment.getCommentId();
         response.userId = comment.getUser().getUserId();
-        response.profileImage = comment.getUser().getProfileImage();
+        response.profileImage = comment.getUser().getProfileImage().getFilePath();
         response.commentText = comment.getCommentText();
         response.createdAt = comment.getCreatedAt();
         response.updatedAt = comment.getUpdatedAt();
