@@ -1,9 +1,20 @@
+CREATE TABLE image_files (
+                             id BIGINT NOT NULL,
+                             file_path VARCHAR(2048),
+                             file_category VARCHAR(50) NOT NULL,
+                             uploader_id BIGINT,
+
+                             CONSTRAINT pk_image_files PRIMARY KEY (id)
+);
+
 CREATE TABLE `users` (
                          `user_id`	bigint	NOT NULL,
                          `email`	varchar(255)	NOT NULL,
                          `password`	varchar(255)	NOT NULL,
                          `nickname`	varchar(10)	NOT NULL,
-                         `profile_image`	varchar(2048)	NULL,
+
+                         `image_file_id` BIGINT	NULL,
+
                          `created_at`	timestamp	NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          `deleted_at`	timestamp	NULL DEFAULT NULL,
                          `information_updated_at`	timestamp	NULL DEFAULT NULL,
@@ -11,7 +22,9 @@ CREATE TABLE `users` (
 
                          CONSTRAINT `PK_USERS` PRIMARY KEY (`user_id`),
                          CONSTRAINT `UK_USERS_EMAIL` UNIQUE (`email`),
-                         CONSTRAINT `UK_USERS_NICKNAME` UNIQUE (`nickname`)
+                         CONSTRAINT `UK_USERS_NICKNAME` UNIQUE (`nickname`),
+
+                         CONSTRAINT fk_users_profile_image FOREIGN KEY (image_file_id) REFERENCES image_files (id)
 );
 
 CREATE TABLE `articles` (
@@ -30,6 +43,22 @@ CREATE TABLE `articles` (
                             CONSTRAINT `FK_USERS_TO_ARTICLES`
                                 FOREIGN KEY (`user_id`)
                                     REFERENCES `users` (`user_id`)
+);
+
+CREATE TABLE article_images (
+                                article_id BIGINT NOT NULL,
+                                image_file_id BIGINT NOT NULL,
+
+                                CONSTRAINT pk_article_images
+                                    PRIMARY KEY (article_id, image_file_id),
+
+                                CONSTRAINT fk_article_images_article
+                                    FOREIGN KEY (article_id)
+                                        REFERENCES articles (article_id),
+
+                                CONSTRAINT fk_article_images_image
+                                    FOREIGN KEY (image_file_id)
+                                        REFERENCES image_files (id)
 );
 
 CREATE TABLE `article_update_history` (
@@ -182,3 +211,4 @@ CREATE SEQUENCE IF NOT EXISTS article_reports_seq START WITH 1 INCREMENT BY 50;
 CREATE SEQUENCE IF NOT EXISTS article_likes_seq START WITH 1 INCREMENT BY 50;
 CREATE SEQUENCE IF NOT EXISTS article_views_seq START WITH 1 INCREMENT BY 50;
 CREATE SEQUENCE IF NOT EXISTS refresh_token_seq START WITH 1 INCREMENT BY 50;
+CREATE SEQUENCE IF NOT EXISTS image_files_seq START WITH 1 INCREMENT BY 50;

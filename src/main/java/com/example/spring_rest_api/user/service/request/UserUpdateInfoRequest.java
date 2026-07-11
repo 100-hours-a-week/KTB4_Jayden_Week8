@@ -11,5 +11,6 @@ public class UserUpdateInfoRequest {
     @NotBlank
     @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z0-9-_]{2,10}$", message = "닉네임은 특수문자를 제외한 2~10자리여야 합니다.")
     private String nickname;
-    private String profileImage;
+    @Pattern(regexp = "^.*\\.(jpg|jpeg|png|gif)$", message = "잘못된 파일입니다.")
+    private String profileImageUrl;
 }

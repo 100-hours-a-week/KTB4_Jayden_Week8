@@ -1,5 +1,6 @@
 package com.example.spring_rest_api.user.entity;
 
+import com.example.spring_rest_api.image.entity.ImageFile;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,13 +19,17 @@ public class User {
     private String email;
     private String password;
     private String nickname;
-    private String profileImage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_file_id")
+    private ImageFile profileImage;
+
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
     private LocalDateTime informationUpdatedAt;
     private LocalDateTime passwordUpdatedAt;
 
-    public static User create(String email, String password, String nickname, String profileImage) {
+    public static User create(String email, String password, String nickname, ImageFile profileImage) {
         User user = new User();
         user.email = email;
         user.password = password;
@@ -37,7 +42,7 @@ public class User {
         return user;
     }
 
-    public User updateInformation(String nickname, String profileImage) {
+    public User updateInformation(String nickname, ImageFile profileImage) {
         this.nickname = nickname;
         this.profileImage = profileImage;
         this.informationUpdatedAt = LocalDateTime.now();

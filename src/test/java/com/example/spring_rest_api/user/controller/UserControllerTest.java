@@ -257,7 +257,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("get_user_info_success"))
                 .andExpect(jsonPath("$.data.email").value(response.getEmail()))
                 .andExpect(jsonPath("$.data.nickname").value(response.getNickname()))
-                .andExpect(jsonPath("$.data.profileImage").value(response.getProfileImage()));
+                .andExpect(jsonPath("$.data.profileImageUrl").isEmpty());
 
         verify(userService, times(1)).read(any(Long.class));
     }

@@ -1,6 +1,5 @@
 package com.example.spring_rest_api.authorization.service.response;
 
-import com.example.spring_rest_api.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,12 +7,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LoginResponse {
 
-    private User user;
+    private Long userId;
+    private String email;
+    private String nickname;
     private TokenInfo token;
 
-    public static LoginResponse of(User user, String accessToken, long expiresIn) {
+    public static LoginResponse of(Long userId, String email, String nickname, String accessToken, long expiresIn) {
         return new LoginResponse(
-                user,
+                userId,
+                email,
+                nickname,
                 new TokenInfo(accessToken, expiresIn)
         );
     }

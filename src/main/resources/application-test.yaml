@@ -35,6 +35,6 @@ decorator:
       multiline: true
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: dummy-secret-a9d8fasf8oscjv8p-asf89asdixcuDOSISDiojdsio9afo
   access-token-exp-seconds: 180
   refresh-token-exp-seconds: 12096000

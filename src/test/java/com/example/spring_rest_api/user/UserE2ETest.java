@@ -3,6 +3,7 @@ package com.example.spring_rest_api.user;
 import com.example.spring_rest_api.authorization.service.request.LoginRequest;
 import com.example.spring_rest_api.authorization.service.response.LoginResponse;
 import com.example.spring_rest_api.common.response.ApiResponse;
+import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import com.example.spring_rest_api.user.service.request.UserCreateRequest;
 import com.example.spring_rest_api.user.service.request.UserUpdateInfoRequest;
@@ -39,12 +40,15 @@ public class UserE2ETest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ImageFileRepository imageFileRepository;
 
     @BeforeEach
     public void setup() throws Exception{
+
+
         UserCreateRequest request = new UserCreateRequest(
                 "before@abc.com",
                 "Abc1234!",
@@ -67,21 +71,23 @@ public class UserE2ETest {
                 "email@abc.com",
                 "Abc1234!",
                 "e2etest",
-                "https://image.jpg"
         );
 
         mockMvc.perform(
                         post("/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
+                                .contentType(MediaType.MULTIPART_MIXED)
+                                .content()
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("register_success"))
                 .andExpect(jsonPath("$.data.email").value(request.getEmail()))
                 .andExpect(jsonPath("$.data.nickname").value(request.getNickname()))
-                .andExpect(jsonPath("$.data.profileImage").value(request.getProfileImage()));
+                .andExpect(jsonPath("$.data.profileImageUrl").value(request.getProfileImageUrl()));
 
         assertThat(userRepository.findByEmail(request.getEmail())).isPresent();
+
     }
 
     @Test
@@ -135,7 +141,7 @@ public class UserE2ETest {
                 .andExpect(jsonPath("$.message").value("user_info_update_success"))
                 .andExpect(jsonPath("$.data.email").value(loginRequest.getEmail()))
                 .andExpect(jsonPath("$.data.nickname").value(updateInfoRequest.getNickname()))
-                .andExpect(jsonPath("$.data.profileImage").value(updateInfoRequest.getProfileImage()));
+                .andExpect(jsonPath("$.data.profileImage").value(updateInfoRequest.getProfileImageUrl()));
 
         assertThat(userRepository.findByEmail(loginRequest.getEmail()).orElseThrow().getNickname()).isEqualTo(updateInfoRequest.getNickname());
 

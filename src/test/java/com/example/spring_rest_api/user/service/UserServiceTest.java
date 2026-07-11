@@ -2,7 +2,10 @@ package com.example.spring_rest_api.user.service;
 
 import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.common.exception.RequestConflictException;
+import com.example.spring_rest_api.image.entity.ImageFile;
+import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import com.example.spring_rest_api.user.entity.User;
+import com.example.spring_rest_api.user.repository.UserQueryRepository;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import com.example.spring_rest_api.user.service.request.UserCreateRequest;
 import com.example.spring_rest_api.user.service.request.UserUpdateInfoRequest;
@@ -11,6 +14,7 @@ import com.example.spring_rest_api.user.service.response.UserResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,7 +25,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,6 +38,10 @@ class UserServiceTest {
     UserRepository userRepository;
     @Mock
     PasswordEncoder passwordEncoder;
+    @Mock
+    UserQueryRepository userQueryRepository;
+    @Mock
+    ImageFileRepository imageFileRepository;
 
     @Test
     @DisplayName("회원 가입 성공")
@@ -45,27 +53,24 @@ class UserServiceTest {
                 "nickname",
                 null
         );
-        User savedUser = User.create(
-                "email@abcd.com",
-                "encodedPassword",
-                "nickname",
-                null
-        );
+        String encodedPassword = "encodedPassword";
         given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
         given(userRepository.findByNickname(request.getNickname())).willReturn(Optional.empty());
-        given(userRepository.save(any(User.class))).willReturn(savedUser);
-        given(passwordEncoder.encode(request.getPassword())).willReturn("encodedPassword");
+        given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(passwordEncoder.encode(request.getPassword())).willReturn(encodedPassword);
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         //when
         UserResponse response = userService.create(request);
 
         //then
-        verify(passwordEncoder, times(1)).encode("1234!Abc");
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(userRepository, times(1)).save(userCaptor.capture());
+        verify(passwordEncoder, times(1)).encode(request.getPassword());
 
         assertThat(response.getEmail()).isEqualTo(request.getEmail());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo(encodedPassword);
         assertThat(response.getNickname()).isEqualTo(request.getNickname());
-        assertThat(response.getProfileImage()).isEqualTo(request.getProfileImage());
+        assertThat(response.getProfileImageUrl()).isEqualTo(request.getProfileImageUrl());
     }
 
     @Test
@@ -132,23 +137,22 @@ class UserServiceTest {
                 "nickname",
                 null
         );
-        User savedUser = User.create(
-                "email@abcd.com",
-                "encodedPassword",
-                "nickname",
-                null
-        );
+        String encodedPassword = "encodedPassword";
+
         given(userRepository.findByEmail(request.getEmail())).willReturn(Optional.empty());
         given(userRepository.findByNickname(request.getNickname())).willReturn(Optional.empty());
-        given(userRepository.save(any(User.class))).willReturn(savedUser);
-        given(passwordEncoder.encode(request.getPassword())).willReturn(savedUser.getPassword());
+        given(userRepository.save(any(User.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(passwordEncoder.encode(request.getPassword())).willReturn(encodedPassword);
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
         //when
         userService.create(request);
 
         //then
+        verify(userRepository, times(1)).save(userCaptor.capture());
         verify(passwordEncoder, times(1)).encode(request.getPassword());
-        assertThat(passwordEncoder.encode(request.getPassword())).isEqualTo(savedUser.getPassword());
+        assertThat(userCaptor.getValue().getPassword()).isEqualTo(encodedPassword);
     }
 
     @Test
@@ -161,8 +165,7 @@ class UserServiceTest {
                 "nickname",
                 null
         );
-        Long userId = 1L;
-        given(userRepository.findById(userId)).willReturn(Optional.of(savedUser));
+        given(userQueryRepository.findByIdWithProfileImage(anyLong())).willReturn(Optional.of(savedUser));
 
         //when
         UserResponse response = userService.read(1L);
@@ -170,29 +173,26 @@ class UserServiceTest {
         //then
         assertThat(response.getEmail()).isEqualTo(savedUser.getEmail());
         assertThat(response.getNickname()).isEqualTo(savedUser.getNickname());
-        assertThat(response.getProfileImage()).isEqualTo(savedUser.getProfileImage());
-        verify(userRepository, times(1)).findById(userId);
+        assertThat(response.getProfileImageUrl()).isNull();
     }
 
     @Test
     @DisplayName("사용자 조회 실패")
     void readFailedTest() {
         //given
-        Long userId = 1L;
-        given(userRepository.findById(userId)).willReturn(Optional.empty());
+        given(userQueryRepository.findByIdWithProfileImage(anyLong())).willReturn(Optional.empty());
 
         //when
         //then
         assertThatThrownBy(() -> userService.read(1L))
                 .isInstanceOf(NotFoundException.class);
-        verify(userRepository, times(1)).findById(userId);
+        verify(userQueryRepository, times(1)).findByIdWithProfileImage(anyLong());
     }
 
     @Test
     @DisplayName("사용자 정보 수정 성공")
     void updateInformationTest() {
         //given
-        Long userId = 1L;
         UserUpdateInfoRequest request = new UserUpdateInfoRequest(
                 "change",
                 "https://image1.jpg"
@@ -203,15 +203,20 @@ class UserServiceTest {
                 "nickname",
                 null
         );
-        given(userRepository.findById(userId)).willReturn(Optional.of(savedUser));
+        ImageFile file = ImageFile.createProfileImage(
+                "https://image1.jpg",
+                1L
+        );
+        given(userQueryRepository.findByIdWithProfileImage(anyLong())).willReturn(Optional.of(savedUser));
         given(userRepository.findByNickname(request.getNickname())).willReturn(Optional.empty());
+        given(imageFileRepository.findByFilePath(anyString())).willReturn(Optional.of(file));
 
         //when
-        UserResponse response = userService.updateInformation(userId, request);
+        UserResponse response = userService.updateInformation(1L, request);
 
         //then
         assertThat(response.getNickname()).isEqualTo(request.getNickname());
-        assertThat(response.getProfileImage()).isEqualTo(request.getProfileImage());
+        assertThat(response.getProfileImageUrl()).isEqualTo(request.getProfileImageUrl());
     }
 
     @Test
@@ -220,13 +225,13 @@ class UserServiceTest {
         //given
         Long userId = 1L;
 
-        given(userRepository.findById(userId)).willReturn(Optional.empty());
+        given(userQueryRepository.findByIdWithProfileImage(userId)).willReturn(Optional.empty());
 
         //when
         //then
         assertThatThrownBy(() -> userService.updateInformation(userId, any()))
                 .isInstanceOf(NotFoundException.class);
-        verify(userRepository, times(1)).findById(userId);
+        verify(userQueryRepository, times(1)).findByIdWithProfileImage(userId);
     }
 
     @Test
@@ -251,13 +256,13 @@ class UserServiceTest {
                 null
         );
         User userSetId = setUserId(findUser, 2L);
-        given(userRepository.findById(userId)).willReturn(Optional.of(updatedUser));
+        given(userQueryRepository.findByIdWithProfileImage(userId)).willReturn(Optional.of(updatedUser));
         given(userRepository.findByNickname(request.getNickname())).willReturn(Optional.of(userSetId));
         //when
         //then
         assertThatThrownBy(() -> userService.updateInformation(userId, request))
                 .isInstanceOf(RequestConflictException.class);
-        verify(userRepository, times(1)).findById(userId);
+        verify(userQueryRepository, times(1)).findByIdWithProfileImage(userId);
         verify(userRepository, times(1)).findByNickname(request.getNickname());
     }
 
@@ -276,16 +281,20 @@ class UserServiceTest {
                 "nickname",
                 null
         );
-
+        ImageFile file = ImageFile.createProfileImage(
+                "https://image1.jpg",
+                1L
+        );
         User idSetUser = setUserId(findUser, 1L);
-        given(userRepository.findById(userId)).willReturn(Optional.of(idSetUser));
+        given(userQueryRepository.findByIdWithProfileImage(userId)).willReturn(Optional.of(idSetUser));
         given(userRepository.findByNickname(request.getNickname())).willReturn(Optional.of(idSetUser));
+        given(imageFileRepository.findByFilePath(anyString())).willReturn(Optional.of(file));
 
         //when
         UserResponse response = userService.updateInformation(userId, request);
         //then
         assertThat(response.getNickname()).isEqualTo(request.getNickname());
-        assertThat(response.getProfileImage()).isEqualTo(request.getProfileImage());
+        assertThat(response.getProfileImageUrl()).isEqualTo(request.getProfileImageUrl());
     }
 
     private User setUserId(User user, Long userId) {
