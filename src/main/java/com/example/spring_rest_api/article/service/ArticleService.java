@@ -14,11 +14,16 @@ import com.example.spring_rest_api.common.exception.BadRequestException;
 import com.example.spring_rest_api.common.exception.ForbiddenException;
 import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.common.exception.TooManyRequestsException;
+import com.example.spring_rest_api.image.entity.ImageFile;
+import com.example.spring_rest_api.image.repository.ImageFileRepository;
+import com.example.spring_rest_api.image.util.ImageFileUtil;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +35,8 @@ public class ArticleService {
     private final ArticleStatRepository statRepository;
     private final UserRepository userRepository;
     private final ArticleUpdateHistoryRepository historyRepository;
+    private final ImageFileRepository imageFileRepository;
+
 
     @Transactional
     public ArticleResponse create(Long userId, ArticleCreateRequest request) {
@@ -39,7 +46,7 @@ public class ArticleService {
                 userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                 request.getTitle(),
                 request.getContent(),
-                request.getContentImages()
+                resolveArticleImages(request.getContentImageUrls())
         ));
         ArticleStat.create(article);
         return ArticleResponse.from(article);
@@ -65,11 +72,12 @@ public class ArticleService {
                 article.getContentImages()
         ));
 
+        List<ImageFile> imageFiles = getImageFiles(request.getContentImageUrls());
         return ArticleResponse.from(
                 article.update(
                         request.getTitle(),
                         request.getContent(),
-                        request.getContentImages()
+                        imageFiles
                 )
         );
     }
@@ -95,8 +103,7 @@ public class ArticleService {
         throwIfArticleIsAbsent(articleId);
 
         return ArticleReadResponse.from(
-                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
-                statRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"))
+                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"))
         );
     }
 
@@ -108,8 +115,62 @@ public class ArticleService {
     }
 
     public List<ArticleReadResponse> readInfiniteScroll(Long pageSize, Long lastArticleId) {
-        return lastArticleId == null ?
+        List<Article> articles = lastArticleId == null ?
                 articleRepository.findAllInfiniteScroll(pageSize) :
                 articleRepository.findAllInfiniteScroll(pageSize, lastArticleId);
+        return articles.stream()
+                .map(ArticleReadResponse::from)
+                .toList();
+    }
+
+
+
+
+    private List<ImageFile> resolveArticleImages(List<String> imageUrls) {
+        if (imageUrls.isEmpty()) {
+            return null;
+        }
+        return imageUrls.stream()
+                .map(this::resolveArticleImage)
+                .toList();
+    }
+
+    private ImageFile resolveArticleImage(String articleImageUrl) {
+        if (articleImageUrl == null || articleImageUrl.isBlank()) {
+            return null;
+        }
+
+        String relativePath = extractPathFromUrl(articleImageUrl);
+        return imageFileRepository.findByFilePath(relativePath)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_IMAGE_NOT_FOUND"));
+    }
+
+    private String extractPathFromUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            String path = uri.getPath();
+            return path != null ? path : url;
+
+        } catch (URISyntaxException e) {
+            return url;
+        }
+    }
+
+    private List<ImageFile> getImageFiles(List<String> imageUrls) {
+        if (imageUrls.isEmpty()) {
+            return null;
+        }
+        return imageUrls.stream()
+                .map(this::getImageFile)
+                .toList();
+    }
+
+    private ImageFile getImageFile(String requestedPath) {
+        if (requestedPath == null) {
+            return null;
+        }
+        String relativePath = ImageFileUtil.extractPathFromUrl(requestedPath);
+        return imageFileRepository.findByFilePath(relativePath)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_IMAGE_NOT_FOUND"));
     }
 }

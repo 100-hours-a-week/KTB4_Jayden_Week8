@@ -16,5 +16,5 @@ public class ArticleUpdateRequest {
     private String title;
     @NotNull
     private String content;
-    private List<String> contentImages;
+    private List<String> contentImageUrls;
 }

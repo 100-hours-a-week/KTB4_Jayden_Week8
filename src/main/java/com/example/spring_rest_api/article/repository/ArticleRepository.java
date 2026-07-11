@@ -1,7 +1,6 @@
 package com.example.spring_rest_api.article.repository;
 
 import com.example.spring_rest_api.article.entity.Article;
-import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,24 +12,26 @@ import java.util.List;
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     @Query("""
-                select new com.example.spring_rest_api.article.service.response.ArticleReadResponse(a.articleId, a.user.userId, a.title, a.content, a.contentImages, a.createdAt, a.updatedAt,
-                        a.articleStat.commentCount, a.articleStat.articleLikeCount, a.articleStat.articleViewCount)
+                select a
                     from Article a
+                    join fetch a.user
+                    join fetch a.articleStat
                     where a.deletedAt is null and a.isArticleHidden is false
                     order by a.articleId desc
                     limit :pageSize
             """)
-    List<ArticleReadResponse> findAllInfiniteScroll(Long pageSize);
+    List<Article> findAllInfiniteScroll(Long pageSize);
 
     @Query("""
-                select new com.example.spring_rest_api.article.service.response.ArticleReadResponse(a.articleId, a.user.userId, a.title, a.content, a.contentImages, a.createdAt, a.updatedAt,
-                        a.articleStat.commentCount, a.articleStat.articleLikeCount, a.articleStat.articleViewCount)
+                select a
                     from Article a
+                    join fetch a.user
+                    join fetch a.articleStat
                     where a.articleId < :lastArticleId and a.deletedAt is null and a.isArticleHidden is false
                     order by a.articleId desc
                     limit :pageSize
             """)
-    List<ArticleReadResponse> findAllInfiniteScroll(Long pageSize, Long lastArticleId);
+    List<Article> findAllInfiniteScroll(Long pageSize, Long lastArticleId);
 
     @Query("""
                 select count(a)

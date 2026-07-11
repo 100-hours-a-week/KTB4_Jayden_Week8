@@ -5,10 +5,17 @@ import com.example.spring_rest_api.article.repository.ArticleTempSaveRepository;
 import com.example.spring_rest_api.article.service.request.ArticleTempSaveRequest;
 import com.example.spring_rest_api.article.service.response.ArticleTempSaveResponse;
 import com.example.spring_rest_api.common.exception.NotFoundException;
+import com.example.spring_rest_api.image.entity.ImageFile;
+import com.example.spring_rest_api.image.repository.ImageFileRepository;
+import com.example.spring_rest_api.image.util.ImageFileUtil;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArticleTempSaveService {
     private final ArticleTempSaveRepository tempSaveRepository;
     private final UserRepository userRepository;
+    private final ImageFileRepository imageFileRepository;
 
     @Transactional
     public void saveTempArticle(Long userId, ArticleTempSaveRequest request) {
@@ -25,20 +33,70 @@ public class ArticleTempSaveService {
                     userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                     request.getTitle(),
                     request.getContent(),
-                    request.getContentImages()
+                    resolveArticleImages(request.getContentImageUrls())
             ));
         } else {
             tempArticle.update(
                     request.getTitle(),
                     request.getContent(),
-                    request.getContentImages()
+                    getImageFiles(request.getContentImageUrls())
             );
         }
-
     }
 
     public ArticleTempSaveResponse readTempArticle(Long userId) {
         TempArticle article = tempSaveRepository.findByUserId(userId).orElseThrow(() -> new NotFoundException("TEMPSAVE_NOT_FOUND"));
         return ArticleTempSaveResponse.from(article);
+    }
+
+
+
+
+    private List<ImageFile> resolveArticleImages(List<String> imageUrls) {
+        if (imageUrls.isEmpty()) {
+            return null;
+        }
+        return imageUrls.stream()
+                .map(this::resolveArticleImage)
+                .toList();
+    }
+
+    private ImageFile resolveArticleImage(String articleImageUrl) {
+        if (articleImageUrl == null || articleImageUrl.isBlank()) {
+            return null;
+        }
+
+        String relativePath = extractPathFromUrl(articleImageUrl);
+        return imageFileRepository.findByFilePath(relativePath)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_IMAGE_NOT_FOUND"));
+    }
+
+    private String extractPathFromUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            String path = uri.getPath();
+            return path != null ? path : url;
+
+        } catch (URISyntaxException e) {
+            return url;
+        }
+    }
+
+    private List<ImageFile> getImageFiles(List<String> imageUrls) {
+        if (imageUrls.isEmpty()) {
+            return null;
+        }
+        return imageUrls.stream()
+                .map(this::getImageFile)
+                .toList();
+    }
+
+    private ImageFile getImageFile(String requestedPath) {
+        if (requestedPath == null) {
+            return null;
+        }
+        String relativePath = ImageFileUtil.extractPathFromUrl(requestedPath);
+        return imageFileRepository.findByFilePath(relativePath)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_IMAGE_NOT_FOUND"));
     }
 }

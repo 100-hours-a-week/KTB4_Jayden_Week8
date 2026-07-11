@@ -53,7 +53,12 @@ public class AuthService {
         ));
 
         return new LoginResult(
-                LoginResponse.of(user, accessToken, jwtProvider.getAccessTokenValidityInMilliseconds()),
+                LoginResponse.of(
+                        user.getUserId(),
+                        user.getEmail(),
+                        user.getNickname(),
+                        accessToken,
+                        jwtProvider.getAccessTokenValidityInMilliseconds()),
                 refreshToken
         );
     }

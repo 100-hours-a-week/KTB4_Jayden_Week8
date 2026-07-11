@@ -17,5 +17,5 @@ public class ArticleCreateRequest {
     @NotNull
     private String content;
 
-    private List<String> contentImages;
+    private List<String> contentImageUrls;
 }

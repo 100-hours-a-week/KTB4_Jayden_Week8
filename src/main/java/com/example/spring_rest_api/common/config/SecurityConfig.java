@@ -33,7 +33,11 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/h2-console/**",
-            "/auth/login"
+            "/auth/login",
+            "/auth/logout",
+            "/users/token/refresh",
+            "/users/me/profile-image",
+            "/public/**"
     };
 
     @Bean
