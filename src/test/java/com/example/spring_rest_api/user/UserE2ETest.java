@@ -2,8 +2,9 @@ package com.example.spring_rest_api.user;
 
 import com.example.spring_rest_api.authorization.service.request.LoginRequest;
 import com.example.spring_rest_api.authorization.service.response.LoginResponse;
+import com.example.spring_rest_api.common.property.UploadProperties;
 import com.example.spring_rest_api.common.response.ApiResponse;
-import com.example.spring_rest_api.image.repository.ImageFileRepository;
+import com.example.spring_rest_api.image.service.response.ImageFileUploadResponse;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import com.example.spring_rest_api.user.service.request.UserCreateRequest;
 import com.example.spring_rest_api.user.service.request.UserUpdateInfoRequest;
@@ -11,19 +12,25 @@ import com.example.spring_rest_api.user.service.request.UserUpdatePasswordReques
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,17 +50,47 @@ public class UserE2ETest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ImageFileRepository imageFileRepository;
+    private UploadProperties uploadProperties;
+
+    private static final Path TEST_UPLOAD_ROOT = createTestUploadDirectory();
+
+    private static Path createTestUploadDirectory() {
+        try {
+            return Files.createTempDirectory("spring-rest-api-upload-test-");
+        } catch (IOException exception) {
+            throw new IllegalStateException("테스트 업로드 디렉토리 생성 실패", exception);
+        }
+    }
+
+    @DynamicPropertySource
+    static void configureUploadDirectory(DynamicPropertyRegistry registry) {
+        registry.add("app.upload.root", () -> TEST_UPLOAD_ROOT.toString());
+    }
 
     @BeforeEach
-    public void setup() throws Exception{
+    void setup() throws Exception{
+        MockMultipartFile profileImage = new MockMultipartFile(
+                "profileImage",
+                "test-image.png",
+                MediaType.IMAGE_PNG_VALUE,
+                new ClassPathResource("images/test-image.png").getInputStream()
+        );
 
+        MvcResult result = mockMvc.perform(
+                        multipart("/users/me/profile-image")
+                                .file(profileImage)
+                )
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ApiResponse<ImageFileUploadResponse> apiResponse = objectMapper.readValue(responseBody, new TypeReference<>() {});
+        String fileUrl = apiResponse.getData().getFileUrl();
 
         UserCreateRequest request = new UserCreateRequest(
                 "before@abc.com",
                 "Abc1234!",
                 "before",
-                "https://image.jpg"
+                fileUrl
         );
 
         mockMvc.perform(
@@ -61,24 +98,52 @@ public class UserE2ETest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
         );
+    }
 
+    @AfterEach
+    void cleanUpUploadedFiles() throws IOException {
+        FileSystemUtils.deleteRecursively(TEST_UPLOAD_ROOT);
+        Files.createDirectories(TEST_UPLOAD_ROOT);
+    }
+
+    @AfterAll
+    static void deleteTestUploadDirectory() throws IOException {
+        FileSystemUtils.deleteRecursively(TEST_UPLOAD_ROOT);
     }
 
     @Test
     @DisplayName("회원가입 성공")
     void signupSuccessTest() throws Exception {
+        MockMultipartFile profileImage = new MockMultipartFile(
+                "profileImage",
+                "test-image.png",
+                MediaType.IMAGE_PNG_VALUE,
+                new ClassPathResource("images/test-image.png").getInputStream()
+        );
+
+        MvcResult result = mockMvc.perform(
+                        multipart("/users/me/profile-image")
+                                .file(profileImage)
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("profile_image_upload_success"))
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        ApiResponse<ImageFileUploadResponse> apiResponse = objectMapper.readValue(responseBody, new TypeReference<>() {});
+        String fileUrl = apiResponse.getData().getFileUrl();
+
         UserCreateRequest request = new UserCreateRequest(
                 "email@abc.com",
                 "Abc1234!",
                 "e2etest",
+                fileUrl
         );
 
         mockMvc.perform(
                         post("/users")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.MULTIPART_MIXED)
-                                .content()
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("register_success"))
@@ -128,7 +193,7 @@ public class UserE2ETest {
         //updateInformation
         UserUpdateInfoRequest updateInfoRequest = new UserUpdateInfoRequest(
                 "change",
-                "https://image.jpg"
+                null
         );
 
         mockMvc.perform(
@@ -141,7 +206,7 @@ public class UserE2ETest {
                 .andExpect(jsonPath("$.message").value("user_info_update_success"))
                 .andExpect(jsonPath("$.data.email").value(loginRequest.getEmail()))
                 .andExpect(jsonPath("$.data.nickname").value(updateInfoRequest.getNickname()))
-                .andExpect(jsonPath("$.data.profileImage").value(updateInfoRequest.getProfileImageUrl()));
+                .andExpect(jsonPath("$.data.profileImageUrl").isEmpty());
 
         assertThat(userRepository.findByEmail(loginRequest.getEmail()).orElseThrow().getNickname()).isEqualTo(updateInfoRequest.getNickname());
 

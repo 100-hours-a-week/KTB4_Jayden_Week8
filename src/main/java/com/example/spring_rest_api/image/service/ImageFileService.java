@@ -1,8 +1,8 @@
 package com.example.spring_rest_api.image.service;
 
-import com.example.spring_rest_api.article.repository.ArticleRepository;
 import com.example.spring_rest_api.common.exception.BusinessException;
 import com.example.spring_rest_api.common.exception.InvalidFileException;
+import com.example.spring_rest_api.common.property.UploadProperties;
 import com.example.spring_rest_api.image.entity.ImageFile;
 import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,15 +25,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageFileService {
     private final ImageFileRepository imageFileRepository;
-    private final ArticleRepository articleRepository;
-
-    private static final Path PROJECT_ROOT = Paths.get(System.getProperty("user.dir"));
-
-    private static final Path PROFILE_DIR = PROJECT_ROOT.resolve("uploads/profile");
-    private static final Path ARTICLE_DIR = PROJECT_ROOT.resolve("uploads/articles");
+    private final UploadProperties uploadProperties;
 
     private static final String PROFILE_URL = "/public/profile/";
-    private static final String ARTICLE_URL = "/public/article/";
+    private static final String ARTICLE_URL = "/public/articles/";
 
     private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif");
 
@@ -46,11 +40,12 @@ public class ImageFileService {
     private ImageFile uploadProfileFile(MultipartFile file, Long userId) {
         String extension = extractAndValidateExtension(file);
         String fileName = generateFileName("profile", extension);
-        Path savePath = ImageFileService.PROFILE_DIR.resolve(fileName);
+        Path profileDirectory = uploadProperties.profileDirectory();
+        Path savePath = profileDirectory.resolve(fileName);
 
         try {
-            if (!Files.exists(ImageFileService.PROFILE_DIR)) {
-                Files.createDirectories(ImageFileService.PROFILE_DIR);
+            if (!Files.exists(profileDirectory)) {
+                Files.createDirectories(profileDirectory);
             }
 
             file.transferTo(savePath.toFile());
@@ -77,7 +72,8 @@ public class ImageFileService {
     private ImageFile uploadArticleFile(MultipartFile file, Long userId) {
         String extension = extractAndValidateExtension(file);
         String fileName = generateFileName("article", extension);
-        Path savePath = ImageFileService.ARTICLE_DIR.resolve(fileName);
+        Path articlesDirectory = uploadProperties.articlesDirectory();
+        Path savePath = articlesDirectory.resolve(fileName);
 
         try {
             file.transferTo(savePath.toFile());
@@ -91,9 +87,10 @@ public class ImageFileService {
 
 
     private void createDirectory() {
-        if (!Files.exists(ImageFileService.ARTICLE_DIR)) {
+        Path articlesDirectory = uploadProperties.articlesDirectory();
+        if (!Files.exists(articlesDirectory)) {
             try {
-                Files.createDirectories(ImageFileService.ARTICLE_DIR);
+                Files.createDirectories(articlesDirectory);
             } catch (IOException exception) {
                 throw new BusinessException("INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
             }
