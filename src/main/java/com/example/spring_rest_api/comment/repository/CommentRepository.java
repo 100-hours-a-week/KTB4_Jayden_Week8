@@ -14,8 +14,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             select new com.example.spring_rest_api.comment.service.response.CommentResponse(
                 c.commentId,
-                u.userId,
-                u.profileImage.filePath,
+                u.nickname,
+                im.filePath,
                 c.commentText,
                 c.createdAt,
                 c.updatedAt,
@@ -24,6 +24,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             )
             from Comment c
             left join c.user u
+            left join u.profileImage im
             left join c.parentComment p
             where
                 c.article.articleId = :articleId
@@ -51,8 +52,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             select new com.example.spring_rest_api.comment.service.response.CommentResponse(
                 c.commentId,
-                u.userId,
-                u.profileImage.filePath,
+                u.nickname,
+                im.filePath,
                 c.commentText,
                 c.createdAt,
                 c.updatedAt,
@@ -61,6 +62,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             )
             from Comment c
             left join c.user u
+            left join u.profileImage im
             left join c.parentComment p
             where
                 c.article.articleId = :articleId
@@ -88,8 +90,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             select new com.example.spring_rest_api.comment.service.response.CommentResponse(
                 c.commentId,
-                u.userId,
-                u.profileImage.filePath,
+                u.nickname,
+                im.filePath,
                 c.commentText,
                 c.createdAt,
                 c.updatedAt,
@@ -98,6 +100,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             )
             from Comment c
             left join c.user u
+            left join u.profileImage im
             left join c.parentComment p
             where
                 c.article.articleId = :articleId

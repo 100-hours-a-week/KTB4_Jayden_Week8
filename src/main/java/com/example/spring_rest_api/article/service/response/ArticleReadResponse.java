@@ -8,12 +8,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @NoArgsConstructor
 public class ArticleReadResponse {
     private Long articleId;
-    private Long userId;
+    private String nickname;
+    private String profileImageUrl;
     private String title;
     private String content;
     private List<String> contentImageUrls;
@@ -29,9 +31,15 @@ public class ArticleReadResponse {
                 .map(ImageFileUtil::toFullUrl)
                 .toList();
 
+        String profileImageUrl = Optional.ofNullable(article.getUser().getProfileImage())
+                .map(ImageFile::getFilePath)
+                .map(ImageFileUtil::toFullUrl)
+                .orElse(null);
+
         ArticleReadResponse response = new ArticleReadResponse();
         response.articleId = article.getArticleId();
-        response.userId = article.getUser().getUserId();
+        response.nickname = article.getUser().getNickname();
+        response.profileImageUrl = profileImageUrl;
         response.title = article.getTitle();
         response.content = article.getContent();
         response.contentImageUrls = fullPicturesPaths;

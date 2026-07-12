@@ -55,7 +55,15 @@ class UserControllerTest {
                 "nickname",
                 null
         );
-        given(userService.create(request)).willReturn(any(UserResponse.class));
+        UserResponse response = UserResponse.from(
+                User.create(
+                        "abcd@abc.com",
+                        "Abcabc1234!",
+                        "nickname",
+                        null
+                )
+        );
+        given(userService.create(any(UserCreateRequest.class))).willReturn(response);
 
         //when
         //then
@@ -65,7 +73,8 @@ class UserControllerTest {
                                 .content(objectMapper.writeValueAsString(request))
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("register_success"));
+                .andExpect(jsonPath("$.message").value("register_success"))
+                .andExpect(jsonPath("$.data.email").value(request.getEmail()));
 
         verify(userService, times(1)).create(any(UserCreateRequest.class));
     }
@@ -245,6 +254,7 @@ class UserControllerTest {
         String token = UUID.randomUUID().toString();
         given(userService.read(anyLong())).willReturn(response);
         given(jwtProvider.isAccessToken(token)).willReturn(true);
+        given(jwtProvider.getUserId(token)).willReturn(2L);
 
         //when
         //then
@@ -260,6 +270,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.profileImageUrl").isEmpty());
 
         verify(userService, times(1)).read(any(Long.class));
+
     }
 
     @Test
