@@ -35,7 +35,7 @@ public class SecurityConfig {
             "/h2-console/**",
             "/auth/login",
             "/auth/logout",
-            "/users/token/refresh",
+            "/auth/token/refresh",
             "/users/me/profile-image",
             "/public/**"
     };
