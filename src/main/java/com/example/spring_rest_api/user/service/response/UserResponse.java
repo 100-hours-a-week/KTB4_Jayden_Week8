@@ -28,7 +28,7 @@ public class UserResponse {
     }
 
     public static UserResponse from(User user) {
-        String fullProfilePath = Optional.ofNullable(user.getProfileImage())
+        String fullProfileUrl = Optional.ofNullable(user.getProfileImage())
                 .map(ImageFile::getFilePath)
                 .map(ImageFileUtil::toFullUrl)
                 .orElse(null);
@@ -36,7 +36,7 @@ public class UserResponse {
         return of(
                 user.getEmail(),
                 user.getNickname(),
-                fullProfilePath,
+                fullProfileUrl,
                 user.getDeletedAt()
         );
     }
