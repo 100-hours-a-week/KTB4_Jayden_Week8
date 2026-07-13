@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,13 +34,13 @@ public class ArticleTempSaveService {
                     userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                     request.getTitle(),
                     request.getContent(),
-                    resolveArticleImages(request.getContentImageUrls())
+                    request.getContentImageUrls()
             ));
         } else {
             tempArticle.update(
                     request.getTitle(),
                     request.getContent(),
-                    getImageFiles(request.getContentImageUrls())
+                    request.getContentImageUrls()
             );
         }
     }
@@ -54,7 +55,7 @@ public class ArticleTempSaveService {
 
     private List<ImageFile> resolveArticleImages(List<String> imageUrls) {
         if (imageUrls.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         return imageUrls.stream()
                 .map(this::resolveArticleImage)
@@ -84,7 +85,7 @@ public class ArticleTempSaveService {
 
     private List<ImageFile> getImageFiles(List<String> imageUrls) {
         if (imageUrls.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         return imageUrls.stream()
                 .map(this::getImageFile)

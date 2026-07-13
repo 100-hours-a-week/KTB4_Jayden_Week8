@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -69,7 +70,9 @@ public class ArticleService {
                 article,
                 article.getTitle(),
                 article.getContent(),
-                article.getContentImages()
+                article.getContentImages().stream()
+                        .map(ImageFile::getFilePath)
+                        .toList()
         ));
 
         List<ImageFile> imageFiles = getImageFiles(request.getContentImageUrls());
@@ -128,7 +131,7 @@ public class ArticleService {
 
     private List<ImageFile> resolveArticleImages(List<String> imageUrls) {
         if (imageUrls.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         return imageUrls.stream()
                 .map(this::resolveArticleImage)
@@ -158,7 +161,7 @@ public class ArticleService {
 
     private List<ImageFile> getImageFiles(List<String> imageUrls) {
         if (imageUrls.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         return imageUrls.stream()
                 .map(this::getImageFile)

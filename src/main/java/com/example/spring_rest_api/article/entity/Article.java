@@ -31,7 +31,7 @@ public class Article {
     @JoinTable(
             name = "article_images",
             joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "image_file_id")
+            inverseJoinColumns = @JoinColumn(name = "image_file_id", referencedColumnName = "id")
     )
     private List<ImageFile> contentImages = new ArrayList<>();
 

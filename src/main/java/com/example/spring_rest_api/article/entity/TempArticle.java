@@ -1,6 +1,5 @@
 package com.example.spring_rest_api.article.entity;
 
-import com.example.spring_rest_api.image.entity.ImageFile;
 import com.example.spring_rest_api.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -31,13 +30,11 @@ public class TempArticle {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "JSON")
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_file_id")
-    private List<ImageFile> contentImages = new ArrayList<>();
+    private List<String> contentImages = new ArrayList<>();
 
     private LocalDateTime savedAt;
 
-    public static TempArticle create(User user, String title, String content, List<ImageFile> contentImages) {
+    public static TempArticle create(User user, String title, String content, List<String> contentImages) {
         TempArticle article = new TempArticle();
         article.user = user;
         article.title = title;
@@ -47,7 +44,7 @@ public class TempArticle {
         return article;
     }
 
-    public TempArticle update(String title, String content, List<ImageFile> contentImages) {
+    public TempArticle update(String title, String content, List<String> contentImages) {
         this.title = title;
         this.content = content;
         this.contentImages = contentImages == null ? new ArrayList<>() : new ArrayList<>(contentImages);

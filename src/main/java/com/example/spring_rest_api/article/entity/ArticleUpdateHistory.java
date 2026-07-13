@@ -1,6 +1,5 @@
 package com.example.spring_rest_api.article.entity;
 
-import com.example.spring_rest_api.image.entity.ImageFile;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,13 +29,11 @@ public class ArticleUpdateHistory {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "JSON")
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_file_id")
-    private List<ImageFile> contentImages = new ArrayList<>();
+    private List<String> contentImages = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
-    public static ArticleUpdateHistory create(Article article, String title, String content, List<ImageFile> contentImages) {
+    public static ArticleUpdateHistory create(Article article, String title, String content, List<String> contentImages) {
         ArticleUpdateHistory history = new ArticleUpdateHistory();
         history.article = article;
         history.title = title;
