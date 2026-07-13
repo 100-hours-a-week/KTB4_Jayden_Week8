@@ -9,6 +9,7 @@ import com.example.spring_rest_api.authorization.service.request.LoginRequest;
 import com.example.spring_rest_api.authorization.service.response.LoginResponse;
 import com.example.spring_rest_api.authorization.service.response.TokenInfo;
 import com.example.spring_rest_api.common.exception.ForbiddenException;
+import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.common.exception.UnauthorizedException;
 import com.example.spring_rest_api.user.entity.User;
 import com.example.spring_rest_api.user.repository.UserRepository;
@@ -36,6 +37,9 @@ public class AuthService {
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("INVALID_CREDENTIALS");
+        }
+        if (user.getDeletedAt() != null) {
+            throw new NotFoundException("USER_DELETED");
         }
 
         String accessToken = jwtProvider.createAccessToken(
