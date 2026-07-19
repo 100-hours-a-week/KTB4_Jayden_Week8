@@ -12,12 +12,11 @@ import java.util.Optional;
 
 @Getter
 @NoArgsConstructor
-public class ArticleReadResponse {
+public class ArticleReadScrollResponse {
     private Long articleId;
     private Long userId;
     private String nickname;
     private String profileImageUrl;
-    private boolean likedByMe;
     private String title;
     private String content;
     private List<String> contentImageUrls;
@@ -27,7 +26,7 @@ public class ArticleReadResponse {
     private Long articleLikeCount;
     private Long articleViewCount;
 
-    public static ArticleReadResponse from(Article article, boolean likedByMe) {
+    public static ArticleReadScrollResponse from(Article article) {
         List<String> fullPicturesPaths = article.getContentImages().stream()
                 .map(ImageFile::getFilePath)
                 .map(ImageFileUtil::toFullUrl)
@@ -38,12 +37,11 @@ public class ArticleReadResponse {
                 .map(ImageFileUtil::toFullUrl)
                 .orElse(null);
 
-        ArticleReadResponse response = new ArticleReadResponse();
+        ArticleReadScrollResponse response = new ArticleReadScrollResponse();
         response.articleId = article.getArticleId();
         response.userId = article.getUser().getUserId();
         response.nickname = article.getUser().getNickname();
         response.profileImageUrl = profileImageUrl;
-        response.likedByMe = likedByMe;
         response.title = article.getTitle();
         response.content = article.getContent();
         response.contentImageUrls = fullPicturesPaths;

@@ -4,6 +4,7 @@ import com.example.spring_rest_api.article.service.ArticleService;
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
+import com.example.spring_rest_api.article.service.response.ArticleReadScrollResponse;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
 import com.example.spring_rest_api.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -53,15 +54,18 @@ public class ArticleController {
     }
 
     @GetMapping("/articles/{articleId}")
-    public ResponseEntity<ApiResponse<ArticleReadResponse>> read(@PathVariable Long articleId) {
+    public ResponseEntity<ApiResponse<ArticleReadResponse>> read(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long articleId
+    ) {
         return ResponseEntity.ok(ApiResponse.of(
                 "article_load_success",
-                articleService.read(articleId)
+                articleService.read(articleId, userId)
         ));
     }
 
     @GetMapping("/articles")
-    public ResponseEntity<ApiResponse<List<ArticleReadResponse>>> readInfiniteScroll(
+    public ResponseEntity<ApiResponse<List<ArticleReadScrollResponse>>> readInfiniteScroll(
             @RequestParam("pageSize") Long pageSize,
             @RequestParam(value = "lastArticleId", required = false) Long lastArticleId
     ) {

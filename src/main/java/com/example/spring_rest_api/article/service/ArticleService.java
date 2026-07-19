@@ -4,16 +4,17 @@ import com.example.spring_rest_api.article.entity.Article;
 import com.example.spring_rest_api.article.entity.ArticleStat;
 import com.example.spring_rest_api.article.entity.ArticleUpdateHistory;
 import com.example.spring_rest_api.article.repository.ArticleRepository;
-import com.example.spring_rest_api.article.repository.ArticleStatRepository;
 import com.example.spring_rest_api.article.repository.ArticleUpdateHistoryRepository;
 import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
+import com.example.spring_rest_api.article.service.response.ArticleReadScrollResponse;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
 import com.example.spring_rest_api.common.exception.*;
 import com.example.spring_rest_api.image.entity.ImageFile;
 import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import com.example.spring_rest_api.image.util.ImageFileUtil;
+import com.example.spring_rest_api.like.repository.ArticleLikeRepository;
 import com.example.spring_rest_api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ArticleService {
     private final ArticleRepository articleRepository;
-    private final ArticleStatRepository statRepository;
+    private final ArticleLikeRepository likeRepository;
     private final UserRepository userRepository;
     private final ArticleUpdateHistoryRepository historyRepository;
     private final ImageFileRepository imageFileRepository;
@@ -108,13 +109,15 @@ public class ArticleService {
         }
     }
 
-    public ArticleReadResponse read(Long articleId) {
+    public ArticleReadResponse read(Long articleId, Long userId) {
         throwIfArticleIsAbsent(articleId);
 
         return ArticleReadResponse.from(
                 articleRepository.findById(articleId)
                         .filter(a -> a.getDeletedAt() == null)
-                        .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"))
+                        .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                likeRepository.findByArticle_ArticleIdAndUser_UserId(articleId, userId)
+                        .isPresent()
         );
     }
 
@@ -125,12 +128,12 @@ public class ArticleService {
         }
     }
 
-    public List<ArticleReadResponse> readInfiniteScroll(Long pageSize, Long lastArticleId) {
+    public List<ArticleReadScrollResponse> readInfiniteScroll(Long pageSize, Long lastArticleId) {
         List<Article> articles = lastArticleId == null ?
                 articleRepository.findAllInfiniteScroll(pageSize) :
                 articleRepository.findAllInfiniteScroll(pageSize, lastArticleId);
         return articles.stream()
-                .map(ArticleReadResponse::from)
+                .map(ArticleReadScrollResponse::from)
                 .toList();
     }
 
