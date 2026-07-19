@@ -50,6 +50,7 @@ public class UserService {
     public UserResponse read(Long userId) {
         return UserResponse.from(
                 userQueryRepository.findByIdWithProfileImage(userId)
+                        .filter(u -> u.getDeletedAt() == null)
                         .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))
         );
     }
@@ -57,8 +58,10 @@ public class UserService {
     @Transactional
     public UserResponse updateInformation(Long userId, UserUpdateInfoRequest request) {
         User user = userQueryRepository.findByIdWithProfileImage(userId)
+                .filter(u -> u.getDeletedAt() == null)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
         User userByNickname = userRepository.findByNickname(request.getNickname())
+                .filter(u -> u.getDeletedAt() == null)
                 .orElse(null);
 
         if (userByNickname != null && !userByNickname.getUserId().equals(userId)) {
@@ -74,6 +77,7 @@ public class UserService {
     @Transactional
     public UserResponse updatePassword(Long userId, UserUpdatePasswordRequest request) {
         User user = userRepository.findById(userId)
+                .filter(u -> u.getDeletedAt() == null)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
         return UserResponse.from(user.updatePassword(
                 passwordEncoder.encode(request.getPassword())
@@ -84,6 +88,10 @@ public class UserService {
     public UserResponse delete(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+        if (user.getDeletedAt() != null) {
+            throw new RequestConflictException("이미 삭제된 회원입니다.");
+        }
+
         user.delete();
         return UserResponse.from(user);
     }

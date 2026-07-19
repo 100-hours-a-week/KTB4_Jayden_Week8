@@ -29,8 +29,12 @@ public class ArticleLikeService {
         }
 
         articleLikeRepository.save(ArticleLike.create(
-                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
-                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))
+                articleRepository.findById(articleId)
+                        .filter(a -> a.getDeletedAt() == null && !a.isArticleHidden())
+                        .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                userRepository.findById(userId)
+                        .filter(u -> u.getDeletedAt() == null)
+                        .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))
         ));
 
         ArticleStat stat = articleStatRepository.findById(articleId)
@@ -45,6 +49,13 @@ public class ArticleLikeService {
 
     @Transactional
     public ArticleLikeCountResponse unlike(Long articleId, Long userId) {
+        articleRepository.findById(articleId)
+                .filter(a -> a.getDeletedAt() == null && !a.isArticleHidden())
+                .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
+        userRepository.findById(userId)
+                .filter(u -> u.getDeletedAt() == null)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+
         ArticleLike like = articleLikeRepository
                 .findByArticle_ArticleIdAndUser_UserId(articleId, userId)
                 .orElseThrow(() -> new NotFoundException("LIKE_NOT_FOUND"));
@@ -61,6 +72,10 @@ public class ArticleLikeService {
     }
 
     public ArticleLikeCountResponse readCount(Long articleId) {
+        articleRepository.findById(articleId)
+                .filter(a -> a.getDeletedAt() == null && !a.isArticleHidden())
+                .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
+
         ArticleStat stat = articleStatRepository.findById(articleId)
                 .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
         return ArticleLikeCountResponse.from(

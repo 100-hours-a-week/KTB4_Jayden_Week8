@@ -8,7 +8,6 @@ import com.example.spring_rest_api.authorization.repository.RefreshTokenReposito
 import com.example.spring_rest_api.authorization.service.request.LoginRequest;
 import com.example.spring_rest_api.authorization.service.response.LoginResponse;
 import com.example.spring_rest_api.authorization.service.response.TokenInfo;
-import com.example.spring_rest_api.common.exception.ForbiddenException;
 import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.common.exception.UnauthorizedException;
 import com.example.spring_rest_api.user.entity.User;
@@ -18,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -100,8 +100,11 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new ForbiddenException("ACCESS_DENIED"));
-        refreshTokenRepository.deleteByUserId(userId);
+    public void logout(String refreshToken) {
+        if (!StringUtils.hasText(refreshToken)) {
+            return;
+        }
+        refreshTokenRepository.findByToken(refreshToken)
+                        .ifPresent(refreshTokenRepository::delete);
     }
 }

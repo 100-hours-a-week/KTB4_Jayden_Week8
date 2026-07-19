@@ -71,10 +71,11 @@ public class AuthController {
 
     @PostMapping("/auth/logout")
     public ResponseEntity<ApiResponse<?>> logout(
-            @AuthenticationPrincipal Long userId,
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse httpResponse
     ) {
+        authService.logout(refreshToken);
+
         if (refreshToken != null) {
             ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                     .httpOnly(true)
@@ -86,7 +87,6 @@ public class AuthController {
             httpResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
-        authService.logout(userId);
         return ResponseEntity.ok(ApiResponse.of(
                 "logout_success", null
         ));

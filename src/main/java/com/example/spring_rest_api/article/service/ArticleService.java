@@ -10,10 +10,7 @@ import com.example.spring_rest_api.article.service.request.ArticleCreateRequest;
 import com.example.spring_rest_api.article.service.request.ArticleUpdateRequest;
 import com.example.spring_rest_api.article.service.response.ArticleReadResponse;
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
-import com.example.spring_rest_api.common.exception.BadRequestException;
-import com.example.spring_rest_api.common.exception.ForbiddenException;
-import com.example.spring_rest_api.common.exception.NotFoundException;
-import com.example.spring_rest_api.common.exception.TooManyRequestsException;
+import com.example.spring_rest_api.common.exception.*;
 import com.example.spring_rest_api.image.entity.ImageFile;
 import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import com.example.spring_rest_api.image.util.ImageFileUtil;
@@ -44,7 +41,9 @@ public class ArticleService {
         throwIfTooManyRequests(userId);
 
         Article article = articleRepository.save(Article.create(
-                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
+                userRepository.findById(userId)
+                        .filter(u -> u.getDeletedAt() == null)
+                        .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                 request.getTitle(),
                 request.getContent(),
                 resolveArticleImages(request.getContentImageUrls())
@@ -92,11 +91,18 @@ public class ArticleService {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
 
+        if (article.getDeletedAt() != null) {
+            throw new RequestConflictException("이미 삭제된 게시글입니다.");
+        }
+
         return ArticleResponse.from(article.delete());
     }
 
     private void throwIfAccessNotValid(Long userId, Long articleId) {
         Article article = articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
+        if (article.getDeletedAt() != null || article.isArticleHidden()) {
+            throw new BadRequestException("ARTICLE_UNAVAILABLE");
+        }
         if (!userId.equals(article.getUser().getUserId()) || article.getUser().getDeletedAt() != null) {
             throw new ForbiddenException("ACCESS_NOT_VALID");
         }
@@ -106,7 +112,9 @@ public class ArticleService {
         throwIfArticleIsAbsent(articleId);
 
         return ArticleReadResponse.from(
-                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"))
+                articleRepository.findById(articleId)
+                        .filter(a -> a.getDeletedAt() == null)
+                        .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"))
         );
     }
 

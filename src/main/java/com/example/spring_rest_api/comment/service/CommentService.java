@@ -32,13 +32,16 @@ public class CommentService {
     @Transactional
     public CommentResponse create(Long userId, Long articleId, CommentCreateRequest request) {
         Comment comment = Comment.create(
-                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
-                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
+                articleRepository.findById(articleId)
+                        .filter(article -> article.getDeletedAt() == null)
+                        .filter(article -> !article.isArticleHidden())
+                        .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                userRepository.findById(userId)
+                        .filter(user -> user.getDeletedAt() == null)
+                        .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                 request.getParentCommentId() == null ? null : commentRepository.findById(request.getParentCommentId()).orElseThrow(() -> new NotFoundException("PARENT_COMMENT_NOT_FOUND")),
                 request.getCommentText()
         );
-
-        throwIfNotInArticle(articleId, comment);
 
         ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
         stat.increaseCommentCount();
@@ -48,7 +51,9 @@ public class CommentService {
 
     @Transactional
     public CommentResponse update(Long userId, Long articleId, Long commentId, CommentUpdateRequest request) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
+        Comment comment = commentRepository.findById(commentId)
+                .filter(c -> c.getDeletedAt() == null)
+                .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
         throwIfForbidden(userId, comment);
         throwIfNotInArticle(articleId, comment);
@@ -78,7 +83,9 @@ public class CommentService {
     }
 
     public CommentResponse read(Long userId, Long articleId, Long commentId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
+        Comment comment = commentRepository.findById(commentId)
+                .filter(c -> c.getDeletedAt() == null)
+                .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
         throwIfNotInArticle(articleId, comment);
 
@@ -111,7 +118,8 @@ public class CommentService {
     }
 
     public CommentCountResponse readCount(Long articleId) {
-        ArticleStat stat = articleStatRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
+        ArticleStat stat = articleStatRepository.findById(articleId)
+                .orElseThrow(() -> new NotFoundException("ARTICLE_STAT_NOT_FOUND"));
         return CommentCountResponse.from(
                 articleId,
                 stat.getCommentCount()

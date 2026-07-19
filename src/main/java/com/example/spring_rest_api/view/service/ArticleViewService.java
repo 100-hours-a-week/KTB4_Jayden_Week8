@@ -32,13 +32,17 @@ public class ArticleViewService {
 
         return articleView == null ?
                 getViewCountIfNotSaved(articleId, userId, stat) :
-                getViewCountIfSaved(articleId, articleView, stat);
+                getViewCountIfSaved(articleId, userId, articleView, stat);
     }
 
     private ArticleViewCountResponse getViewCountIfNotSaved(Long articleId, Long userId, ArticleStat stat) {
         articleViewRepository.save(ArticleView.init(
-                articleRepository.findById(articleId).orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
-                userRepository.findById(userId).orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))));
+                articleRepository.findById(articleId)
+                        .filter(a -> a.getDeletedAt() == null && !a.isArticleHidden())
+                        .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND")),
+                userRepository.findById(userId)
+                        .filter(u -> u.getDeletedAt() == null)
+                        .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"))));
 
         stat.incrementArticleViewCount();
 
@@ -48,7 +52,14 @@ public class ArticleViewService {
         );
     }
 
-    private ArticleViewCountResponse getViewCountIfSaved(Long articleId, ArticleView articleView, ArticleStat stat) {
+    private ArticleViewCountResponse getViewCountIfSaved(Long articleId, Long userId, ArticleView articleView, ArticleStat stat) {
+        articleRepository.findById(articleId)
+                .filter(a -> a.getDeletedAt() == null && !a.isArticleHidden())
+                .orElseThrow(() -> new NotFoundException("ARTICLE_NOT_FOUND"));
+        userRepository.findById(userId)
+                .filter(u -> u.getDeletedAt() == null)
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+
         if (articleView.getUpdatedAt().plusDays(1).isBefore(LocalDateTime.now())) {
             articleView.update();
             stat.incrementArticleViewCount();
