@@ -6,6 +6,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Optional;
 
@@ -32,8 +33,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponseDto> handleException(HttpMessageNotReadableException exception) {
+    public ResponseEntity<ErrorResponseDto> handleNotReadable(HttpMessageNotReadableException exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponseDto.of(exception.getMessage()));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handleMaxUploadSize(MaxUploadSizeExceededException exception) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
                     .body(ErrorResponseDto.of(exception.getMessage()));
     }
 }
