@@ -13,6 +13,7 @@ import java.util.Optional;
 @NoArgsConstructor
 public class CommentResponse {
     private Long commentId;
+    private Long userId;
     private String nickname;
     private String profileImageUrl;
     private String commentText;
@@ -29,6 +30,7 @@ public class CommentResponse {
 
         CommentResponse response = new CommentResponse();
         response.commentId = comment.getCommentId();
+        response.userId = comment.getUser().getUserId();
         response.nickname = comment.getUser().getNickname();
         response.profileImageUrl = profileImageUrl;
         response.commentText = comment.getCommentText();
@@ -40,9 +42,10 @@ public class CommentResponse {
     }
 
     //무한스크롤 쿼리 DTO
-    public CommentResponse(Long commentId, String nickname, String profileImagePath, String commentText, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt, Long parentCommentId) {
+    public CommentResponse(Long commentId, Long userId, String nickname, String profileImagePath, String commentText, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt, Long parentCommentId) {
 
         this.commentId = commentId;
+        this.userId = userId;
         this.nickname = nickname;
         this.profileImageUrl = Optional.ofNullable(profileImagePath)
                 .map(ImageFileUtil::toFullUrl)

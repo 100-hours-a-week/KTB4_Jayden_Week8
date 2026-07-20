@@ -14,6 +14,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             select new com.example.spring_rest_api.comment.service.response.CommentResponse(
                 c.commentId,
+                u.userId,
                 u.nickname,
                 im.filePath,
                 c.commentText,
@@ -52,6 +53,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             select new com.example.spring_rest_api.comment.service.response.CommentResponse(
                 c.commentId,
+                u.userId,
                 u.nickname,
                 im.filePath,
                 c.commentText,
@@ -90,6 +92,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("""
             select new com.example.spring_rest_api.comment.service.response.CommentResponse(
                 c.commentId,
+                u.userId,
                 u.nickname,
                 im.filePath,
                 c.commentText,

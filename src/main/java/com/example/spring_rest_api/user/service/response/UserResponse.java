@@ -12,14 +12,16 @@ import java.util.Optional;
 @Getter
 @NoArgsConstructor
 public class UserResponse {
+    private Long userId;
     private String email;
     private String nickname;
     private String profileImageUrl;
     private LocalDateTime deletedAt;
 
 
-    public static UserResponse of(String email, String nickname, String profileImageUrl, LocalDateTime deletedAt) {
+    public static UserResponse of(Long userId, String email, String nickname, String profileImageUrl, LocalDateTime deletedAt) {
         UserResponse userResponse = new UserResponse();
+        userResponse.userId = userId;
         userResponse.email = email;
         userResponse.nickname = nickname;
         userResponse.profileImageUrl = profileImageUrl;
@@ -34,6 +36,7 @@ public class UserResponse {
                 .orElse(null);
 
         return of(
+                user.getUserId(),
                 user.getEmail(),
                 user.getNickname(),
                 fullProfileUrl,
