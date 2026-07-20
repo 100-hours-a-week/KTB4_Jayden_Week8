@@ -3,6 +3,7 @@ package com.example.spring_rest_api.user.service;
 import com.example.spring_rest_api.common.exception.NotFoundException;
 import com.example.spring_rest_api.common.exception.RequestConflictException;
 import com.example.spring_rest_api.image.entity.ImageFile;
+import com.example.spring_rest_api.image.entity.ImageStatus;
 import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import com.example.spring_rest_api.image.util.ImageFileUtil;
 import com.example.spring_rest_api.user.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +40,21 @@ public class UserService {
             throw new RequestConflictException("이미 존재하는 닉네임입니다.");
         }
 
-        User user = User.create(
+        ImageFile profileImage = resolveProfileImage(request.getProfileImageUrl());
+
+        User saved = userRepository.save(User.create(
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
                 request.getNickname(),
-                resolveProfileImage(request.getProfileImageUrl())
-        );
-        return UserResponse.from(userRepository.save(user));
+                profileImage
+        ));
+
+        if (profileImage != null) {
+            profileImage.changeAttachedStatus();
+            profileImage.changeUploaderId(saved.getUserId());
+        }
+
+        return UserResponse.from(saved);
     }
 
     public UserResponse read(Long userId) {
@@ -68,10 +78,33 @@ public class UserService {
             throw new RequestConflictException("이미 존재하는 닉네임입니다.");
         }
 
-        return UserResponse.from(user.updateInformation(
+        ImageFile previousProfileImage = user.getProfileImage();
+
+        user.updateInformation(
                 request.getNickname(),
-                getImageFile(request.getProfileImageUrl())
-        ));
+                resolveProfileImage(request.getProfileImageUrl())
+        );
+
+        ImageFile updatedImageFile = user.getProfileImage();
+        if (previousProfileImage != null && !isSameImage(previousProfileImage, updatedImageFile)) {
+            previousProfileImage.changeTempStatus();
+        }
+        if (updatedImageFile != null && updatedImageFile.getImageStatus() == ImageStatus.TEMP) {
+            updatedImageFile.changeAttachedStatus();
+            updatedImageFile.changeUploaderId(user.getUserId());
+        }
+
+        return UserResponse.from(user);
+    }
+
+    private boolean isSameImage(ImageFile previousProfileImage, ImageFile updatedImageFile) {
+        if (previousProfileImage == updatedImageFile) {
+            return true;
+        }
+        if (previousProfileImage == null || updatedImageFile == null) {
+            return false;
+        }
+        return Objects.equals(previousProfileImage.getId(), updatedImageFile.getId());
     }
 
     @Transactional

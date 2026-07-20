@@ -1,11 +1,12 @@
 package com.example.spring_rest_api.article.entity;
 
-import com.example.spring_rest_api.image.entity.ImageFile;
 import com.example.spring_rest_api.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,13 +28,9 @@ public class Article {
     private String title;
     private String content;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "article_images",
-            joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "image_file_id", referencedColumnName = "id")
-    )
-    private List<ImageFile> contentImages = new ArrayList<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "JSON")
+    private List<String> contentImages = new ArrayList<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -43,7 +40,7 @@ public class Article {
     @OneToOne(mappedBy = "article", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private ArticleStat articleStat;
 
-    public static Article create(User user, String title, String content, List<ImageFile> contentImages) {
+    public static Article create(User user, String title, String content, List<String> contentImages) {
         Article article = new Article();
         article.user = user;
         article.title = title;
@@ -59,7 +56,7 @@ public class Article {
         return article;
     }
 
-    public Article update(String title, String content, List<ImageFile> contentImages) {
+    public Article update(String title, String content, List<String> contentImages) {
         this.title = title;
         this.content = content;
         this.contentImages = contentImages == null ? new ArrayList<>() : contentImages;

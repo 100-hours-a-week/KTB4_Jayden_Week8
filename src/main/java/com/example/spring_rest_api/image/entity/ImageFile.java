@@ -21,17 +21,34 @@ public class ImageFile {
 
     private Long uploaderId;
 
-    private ImageFile(String filePath, FileCategory fileCategory, Long uploaderId) {
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ImageStatus imageStatus;
+
+    private ImageFile(String filePath, FileCategory fileCategory, Long uploaderId, ImageStatus imageStatus) {
         this.filePath = filePath;
         this.fileCategory = fileCategory;
         this.uploaderId = uploaderId;
+        this.imageStatus = imageStatus;
     }
 
     public static ImageFile createProfileImage(String filePath , Long uploaderId) {
-        return new ImageFile(filePath, FileCategory.PROFILE_IMAGE, uploaderId);
+        return new ImageFile(filePath, FileCategory.PROFILE_IMAGE, uploaderId, ImageStatus.TEMP);
     }
 
     public static ImageFile createArticleImage(String filePath , Long uploaderId) {
-        return new ImageFile(filePath, FileCategory.ARTICLE_ATTACHMENT, uploaderId);
+        return new ImageFile(filePath, FileCategory.ARTICLE_ATTACHMENT, uploaderId, ImageStatus.TEMP);
+    }
+
+    public void changeAttachedStatus() {
+        this.imageStatus = ImageStatus.ATTACHED;
+    }
+
+    public void changeTempStatus() {
+        this.imageStatus = ImageStatus.TEMP;
+    }
+
+    public void changeUploaderId(Long uploaderId) {
+        this.uploaderId = uploaderId;
     }
 }

@@ -27,11 +27,6 @@ public class ArticleReadScrollResponse {
     private Long articleViewCount;
 
     public static ArticleReadScrollResponse from(Article article) {
-        List<String> fullPicturesPaths = article.getContentImages().stream()
-                .map(ImageFile::getFilePath)
-                .map(ImageFileUtil::toFullUrl)
-                .toList();
-
         String profileImageUrl = Optional.ofNullable(article.getUser().getProfileImage())
                 .map(ImageFile::getFilePath)
                 .map(ImageFileUtil::toFullUrl)
@@ -44,7 +39,7 @@ public class ArticleReadScrollResponse {
         response.profileImageUrl = profileImageUrl;
         response.title = article.getTitle();
         response.content = article.getContent();
-        response.contentImageUrls = fullPicturesPaths;
+        response.contentImageUrls = article.getContentImages();
         response.createdAt = article.getCreatedAt();
         response.updatedAt = article.getUpdatedAt();
         response.commentCount = article.getArticleStat().getCommentCount();

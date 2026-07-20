@@ -3,6 +3,7 @@ CREATE TABLE image_files (
                              file_path VARCHAR(2048),
                              file_category VARCHAR(50) NOT NULL,
                              uploader_id BIGINT,
+                             image_status VARCHAR(50) NOT NULL,
 
                              CONSTRAINT pk_image_files PRIMARY KEY (id)
 );
@@ -43,22 +44,6 @@ CREATE TABLE `articles` (
                             CONSTRAINT `FK_USERS_TO_ARTICLES`
                                 FOREIGN KEY (`user_id`)
                                     REFERENCES `users` (`user_id`)
-);
-
-CREATE TABLE article_images (
-                                article_id BIGINT NOT NULL,
-                                image_file_id BIGINT NOT NULL,
-
-                                CONSTRAINT pk_article_images
-                                    PRIMARY KEY (article_id, image_file_id),
-
-                                CONSTRAINT fk_article_images_article
-                                    FOREIGN KEY (article_id)
-                                        REFERENCES articles (article_id),
-
-                                CONSTRAINT fk_article_images_image
-                                    FOREIGN KEY (image_file_id)
-                                        REFERENCES image_files (id)
 );
 
 CREATE TABLE `article_update_history` (

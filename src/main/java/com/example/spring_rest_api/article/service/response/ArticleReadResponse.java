@@ -28,11 +28,6 @@ public class ArticleReadResponse {
     private Long articleViewCount;
 
     public static ArticleReadResponse from(Article article, boolean likedByMe) {
-        List<String> fullPicturesPaths = article.getContentImages().stream()
-                .map(ImageFile::getFilePath)
-                .map(ImageFileUtil::toFullUrl)
-                .toList();
-
         String profileImageUrl = Optional.ofNullable(article.getUser().getProfileImage())
                 .map(ImageFile::getFilePath)
                 .map(ImageFileUtil::toFullUrl)
@@ -46,7 +41,7 @@ public class ArticleReadResponse {
         response.likedByMe = likedByMe;
         response.title = article.getTitle();
         response.content = article.getContent();
-        response.contentImageUrls = fullPicturesPaths;
+        response.contentImageUrls = article.getContentImages();
         response.createdAt = article.getCreatedAt();
         response.updatedAt = article.getUpdatedAt();
         response.commentCount = article.getArticleStat().getCommentCount();

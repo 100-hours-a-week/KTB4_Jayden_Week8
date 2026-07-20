@@ -12,6 +12,7 @@ import com.example.spring_rest_api.article.service.response.ArticleReadScrollRes
 import com.example.spring_rest_api.article.service.response.ArticleResponse;
 import com.example.spring_rest_api.common.exception.*;
 import com.example.spring_rest_api.image.entity.ImageFile;
+import com.example.spring_rest_api.image.entity.ImageStatus;
 import com.example.spring_rest_api.image.repository.ImageFileRepository;
 import com.example.spring_rest_api.image.util.ImageFileUtil;
 import com.example.spring_rest_api.like.repository.ArticleLikeRepository;
@@ -25,6 +26,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -47,9 +49,16 @@ public class ArticleService {
                         .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND")),
                 request.getTitle(),
                 request.getContent(),
-                resolveArticleImages(request.getContentImageUrls())
+                request.getContentImageUrls()
         ));
+
         ArticleStat.create(article);
+
+        List<ImageFile> contentImages = resolveArticleImages(request.getContentImageUrls());
+        if (!contentImages.isEmpty()) {
+            contentImages.forEach(ImageFile::changeAttachedStatus);
+        }
+
         return ArticleResponse.from(article);
     }
 
@@ -70,19 +79,38 @@ public class ArticleService {
                 article,
                 article.getTitle(),
                 article.getContent(),
-                article.getContentImages().stream()
-                        .map(ImageFile::getFilePath)
-                        .toList()
+                article.getContentImages()
         ));
+        List<String> previousImages = article.getContentImages();
+        List<String> updatedImages = request.getContentImageUrls();
+        if (!previousImages.isEmpty() && !isSameImages(previousImages, updatedImages)) {
+            resolveArticleImages(article.getContentImages())
+                    .forEach(ImageFile::changeTempStatus);
+        }
+        List<ImageFile> updatedImageFiles = getImageFiles(updatedImages);
+        if  (!updatedImageFiles.isEmpty()) {
+            updatedImageFiles.stream()
+                    .filter(imageFile -> imageFile.getImageStatus() == ImageStatus.TEMP)
+                    .forEach(ImageFile::changeAttachedStatus);
+        }
 
-        List<ImageFile> imageFiles = getImageFiles(request.getContentImageUrls());
         return ArticleResponse.from(
                 article.update(
                         request.getTitle(),
                         request.getContent(),
-                        imageFiles
+                        request.getContentImageUrls()
                 )
         );
+    }
+
+    private boolean isSameImages(List<String> previousImages, List<String> updatedImages) {
+        if (previousImages == updatedImages) {
+            return true;
+        }
+        if (previousImages == null || updatedImages == null) {
+            return false;
+        }
+        return Objects.equals(previousImages, updatedImages);
     }
 
     @Transactional
